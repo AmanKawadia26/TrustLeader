@@ -1,0 +1,10 @@
+---
+description: Use SSH key id_ed25519_enhanced_gpt for TrustLeader Git remote
+alwaysApply: true
+---
+
+# Git SSH for this project
+
+- Remote: `git@github.com:AmanKawadia26/TrustLeader.git`
+- Use the SSH private key **`~/.ssh/id_ed25519_enhanced_gpt`** for all Git operations for this repository.
+- This repo is configured with `core.sshCommand` pointing at that key.

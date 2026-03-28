@@ -1,0 +1,266 @@
+You are a senior full-stack engineer building a production-ready MVP for a scalable review platform called "Trustleader.org", similar to Trustpilot but with a traffic-light trust system.
+
+You MUST strictly follow the architecture, constraints, and feature set below. Do NOT skip anything. Do NOT simplify core logic.
+
+---
+
+## 🧱 TECH STACK (MANDATORY)
+
+Frontend:
+
+* React 18 + Vite
+* React Router v6
+* React Query (for API state)
+* Axios or fetch
+* react-i18next (i18n-ready)
+* Lazy loading (React.lazy + Suspense)
+
+Backend:
+
+* Go (Golang) API server
+* REST API (Chi router or equivalent)
+* JWT validation (Supabase Auth)
+
+Database:
+
+* Supabase (PostgreSQL)
+* Use proper schema + relations
+* Row Level Security awareness
+
+---
+
+## 🎯 CORE PRODUCT GOAL
+
+Build a review platform where businesses are rated using a TRAFFIC LIGHT SYSTEM instead of only star ratings:
+
+* Red → High risk
+* Orange → Caution
+* Green → Strong trust signal
+
+Traffic light is NOT manual review reading. It is computed using rules and signals.
+
+---
+
+## 📦 CORE FEATURES (MVP)
+
+1. BUSINESS PROFILES
+
+* Each business has:
+
+  * id
+  * domain
+  * name
+  * description (from meta scraping)
+  * traffic_light (red/orange/green)
+  * green_insurance_eligible (boolean)
+* Public page: /business/:id OR /review/:domain
+
+---
+
+2. REVIEWS SYSTEM
+
+* Users can:
+
+  * Post review (rating + text)
+  * Edit review
+* Review lifecycle:
+
+  * Submitted → moderation queue → approved/rejected
+* Only approved reviews appear publicly
+
+---
+
+3. TRAFFIC LIGHT ENGINE (IMPORTANT)
+
+* Automatically computed using:
+
+  * Review count
+  * Recency
+  * Rating distribution
+  * Flags (reports, moderation)
+* Must support:
+
+  * Recalculation on new review
+  * Admin override (future-ready)
+  * Audit log of changes
+
+DO NOT fake insurance logic — only store eligibility flags.
+
+---
+
+4. DASHBOARDS (3 TYPES)
+
+A. Company Dashboard (/dashboard/company)
+
+* View reviews
+* Respond to reviews
+* See traffic light status
+
+B. Consumer Dashboard (/dashboard/consumer)
+
+* View own reviews
+* Edit reviews
+* See review status
+
+C. Reseller Dashboard (/dashboard/reseller)
+
+* Track referrals
+* Track earnings
+* Show payouts (mock logic OK for MVP)
+
+---
+
+5. AUTHENTICATION
+
+* Supabase Auth
+* JWT used in backend
+* Protected routes:
+
+  * dashboards
+  * posting reviews
+
+---
+
+6. ROUTES (FRONTEND)
+
+Public:
+
+* /
+* /business/:id
+* /write-review/:businessId
+
+Auth:
+
+* /auth/*
+
+Protected:
+
+* /dashboard/company
+* /dashboard/consumer
+* /dashboard/reseller
+
+---
+
+7. TRAFFIC LIGHT UI COMPONENT
+
+* Component: TrafficLightBadge
+* Props:
+
+  * state: red | orange | green
+  * tooltip text (from config, NOT hardcoded legal text)
+* Must be reusable
+
+---
+
+8. GREEN BADGE WIDGET (IMPORTANT)
+
+* Show ONLY IF:
+  traffic_light === "green" AND green_insurance_eligible === true
+* Build component:
+  MarkelGuaranteeBanner
+* Lazy load images
+* Include disclaimer placeholder
+
+---
+
+9. SEARCH + LISTING
+
+* Endpoint: GET /api/businesses
+* Basic search by name/domain
+
+---
+
+10. BULK IMPORT + SCRAPING (BACKEND)
+
+* Worker system in Go
+* Input: domain list
+* Extract:
+
+  * title
+  * meta description
+* Must be:
+
+  * idempotent
+  * retry-safe
+
+---
+
+11. EMAIL (BASIC)
+
+* Signup email
+* Review notifications
+
+---
+
+📡 API REQUIREMENTS
+
+Base: /api
+
+* GET /health
+* GET /api/businesses
+* GET /api/businesses/:id
+* POST /api/reviews (auth required)
+* Dashboard endpoints (protected)
+
+---
+
+⚙️ NON-FUNCTIONAL REQUIREMENTS
+
+* Scalable architecture (1M+ businesses future-ready)
+* Clean separation:
+
+  * frontend
+  * backend
+  * workers
+* No WordPress plugins
+* No fake/legal-sensitive logic (insurance, payouts)
+
+---
+
+🚫 STRICT RULES
+
+* DO NOT skip dashboards
+* DO NOT skip traffic light logic
+* DO NOT hardcode business logic in frontend
+* DO NOT fake backend with mock data
+* DO NOT violate API structure
+* DO NOT add unnecessary features outside scope
+
+---
+
+📁 OUTPUT STRUCTURE
+
+Generate:
+
+Frontend:
+
+* /src/pages
+* /src/components
+* /src/api
+* /src/hooks
+
+Backend:
+
+* /cmd/server
+* /internal/api
+* /internal/services
+* /internal/models
+* /internal/workers
+
+Database:
+
+* SQL schema
+
+---
+
+🎯 FINAL GOAL
+
+Deliver a WORKING MVP where:
+
+* Users can post reviews
+* Businesses display traffic light
+* Dashboards function
+* API is connected
+* System is scalable
+
+Do NOT stop halfway. Build complete working system.

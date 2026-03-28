@@ -1,0 +1,672 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Trustleader.org API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: businesses
+    description: Business profile operations
+  - name: reviews
+    description: Review operations
+  - name: dashboard
+    description: Dashboard operations
+  - name: auth
+    description: Auth operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /businesses:
+    get:
+      operationId: listBusinesses
+      tags: [businesses]
+      summary: Search/list businesses
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search query (name or domain)
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of businesses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessListResponse"
+
+  /businesses/{id}:
+    get:
+      operationId: getBusiness
+      tags: [businesses]
+      summary: Get business by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Business profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reviews:
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Post a review
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewRequest"
+      responses:
+        "201":
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reviews/{id}:
+    put:
+      operationId: updateReview
+      tags: [reviews]
+      summary: Edit a review
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReviewRequest"
+      responses:
+        "200":
+          description: Review updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /businesses/{id}/reviews:
+    get:
+      operationId: getBusinessReviews
+      tags: [reviews]
+      summary: Get approved reviews for a business
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewListResponse"
+
+  /dashboard/company/reviews:
+    get:
+      operationId: getCompanyReviews
+      tags: [dashboard]
+      summary: Company dashboard - get reviews for owned business
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Company reviews
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/company/respond:
+    post:
+      operationId: respondToReview
+      tags: [dashboard]
+      summary: Company responds to a review
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RespondToReviewRequest"
+      responses:
+        "200":
+          description: Response saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/company/business:
+    get:
+      operationId: getCompanyBusiness
+      tags: [dashboard]
+      summary: Company dashboard - get own business profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Business profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: No business registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/consumer/reviews:
+    get:
+      operationId: getConsumerReviews
+      tags: [dashboard]
+      summary: Consumer dashboard - get own reviews
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Consumer reviews
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/reseller/stats:
+    get:
+      operationId: getResellerStats
+      tags: [dashboard]
+      summary: Reseller dashboard stats
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Reseller stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResellerStats"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/reseller/referrals:
+    get:
+      operationId: getResellerReferrals
+      tags: [dashboard]
+      summary: Reseller dashboard referrals
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Referral list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/profile:
+    get:
+      operationId: getUserProfile
+      tags: [auth]
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+
+    TrafficLight:
+      type: string
+      enum: [red, orange, green]
+
+    Business:
+      type: object
+      properties:
+        id:
+          type: string
+        domain:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        traffic_light:
+          $ref: "#/components/schemas/TrafficLight"
+        green_insurance_eligible:
+          type: boolean
+        review_count:
+          type: integer
+        average_rating:
+          type: number
+          format: float
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - domain
+        - name
+        - traffic_light
+        - green_insurance_eligible
+        - review_count
+        - created_at
+        - updated_at
+
+    BusinessListResponse:
+      type: object
+      properties:
+        businesses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Business"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - businesses
+        - total
+        - page
+        - limit
+
+    ReviewStatus:
+      type: string
+      enum: [pending, approved, rejected]
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+        business_id:
+          type: string
+        user_id:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+        status:
+          $ref: "#/components/schemas/ReviewStatus"
+        company_response:
+          type: string
+          nullable: true
+        business_name:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - business_id
+        - user_id
+        - rating
+        - text
+        - status
+        - created_at
+        - updated_at
+
+    ReviewListResponse:
+      type: object
+      properties:
+        reviews:
+          type: array
+          items:
+            $ref: "#/components/schemas/Review"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - reviews
+        - total
+        - page
+        - limit
+
+    CreateReviewRequest:
+      type: object
+      properties:
+        business_id:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+          minLength: 10
+      required:
+        - business_id
+        - rating
+        - text
+
+    UpdateReviewRequest:
+      type: object
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+          minLength: 10
+      required:
+        - rating
+        - text
+
+    RespondToReviewRequest:
+      type: object
+      properties:
+        review_id:
+          type: string
+        response:
+          type: string
+          minLength: 1
+      required:
+        - review_id
+        - response
+
+    ResellerStats:
+      type: object
+      properties:
+        total_referrals:
+          type: integer
+        approved_referrals:
+          type: integer
+        pending_earnings:
+          type: number
+          format: float
+        total_earnings:
+          type: number
+          format: float
+      required:
+        - total_referrals
+        - approved_referrals
+        - pending_earnings
+        - total_earnings
+
+    Referral:
+      type: object
+      properties:
+        id:
+          type: string
+        business_id:
+          type: string
+        business_name:
+          type: string
+        business_domain:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, paid]
+        commission_amount:
+          type: number
+          format: float
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - business_id
+        - business_name
+        - business_domain
+        - status
+        - commission_amount
+        - created_at
+
+    ReferralListResponse:
+      type: object
+      properties:
+        referrals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Referral"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - referrals
+        - total
+        - page
+        - limit
+
+    UserRole:
+      type: string
+      enum: [consumer, company, reseller, admin]
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+        business_id:
+          type: string
+          nullable: true
+        reseller_id:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - role
+        - created_at

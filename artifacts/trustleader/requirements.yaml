@@ -1,0 +1,20 @@
+packages:
+  "react-i18next": "Internationalization support for all visible strings"
+  "i18next": "Core i18n library"
+  "framer-motion": "Animations and page transitions for a premium feel"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes safely"
+  "date-fns": "Date formatting for review dates"
+
+images:
+  - path: "artifacts/trustleader/public/images/hero-bg.png"
+    description: "Abstract gradient mesh background in clean professional blues, white, and subtle silver. Soft light leaks, conveying trust and transparency."
+    aspect_ratio: "16:9"
+  - path: "artifacts/trustleader/public/images/logo.png"
+    description: "Minimalist geometric shield logo mark in deep solid blue on a transparent background, representing trust and leadership."
+    aspect_ratio: "1:1"
+
+notes:
+  - API hooks are imported from @workspace/api-client-react
+  - Auth is mocked via localStorage since explicit login/register endpoints were not in the provided OpenAPI snippet.
+  - The custom wrapper hooks inject the Authorization Bearer token into requests.
