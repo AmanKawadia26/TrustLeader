@@ -22,13 +22,42 @@ export const TrafficLight = {
   green: "green",
 } as const;
 
+export interface InsuranceCompanySummary {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url?: string | null;
+  description?: string | null;
+  terms_url?: string | null;
+}
+
+export type ListingSource = (typeof ListingSource)[keyof typeof ListingSource];
+
+export const ListingSource = {
+  owner_claimed: "owner_claimed",
+  import_scrape: "import_scrape",
+  consumer_first_review: "consumer_first_review",
+} as const;
+
+export type ListingStatus = (typeof ListingStatus)[keyof typeof ListingStatus];
+
+export const ListingStatus = {
+  pending_verification: "pending_verification",
+  active: "active",
+  archived: "archived",
+} as const;
+
 export interface Business {
   id: string;
   domain: string;
   name: string;
   description?: string | null;
   traffic_light: TrafficLight;
-  green_insurance_eligible: boolean;
+  /** Insurer has acknowledged coverage via TrustLeader */
+  insurance_proof: boolean;
+  listing_source: ListingSource;
+  listing_status: ListingStatus;
+  insurance?: InsuranceCompanySummary | null;
   review_count: number;
   average_rating?: number | null;
   created_at: string;
@@ -72,6 +101,27 @@ export interface ReviewListResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface RecentReviewPublic {
+  id: string;
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  rating: number;
+  text: string;
+  reviewer_label: string;
+  business_id: string;
+  business_name: string;
+  business_domain: string;
+  created_at: string;
+}
+
+export interface RecentReviewsResponse {
+  reviews: RecentReviewPublic[];
+  /** When the in-memory cache was last refreshed from the database */
+  refreshed_at?: string;
 }
 
 export interface CreateReviewRequest {

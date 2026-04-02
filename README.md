@@ -12,7 +12,9 @@ Trustleader.org monorepo: React frontend (`artifacts/trustleader`), shared OpenA
 
 ### Database
 
-Apply SQL migrations in `supabase/migrations/` to your Supabase project (`supabase db push` with CLI, or run SQL in the SQL editor). See [docs/AUTH_AND_DB.md](docs/AUTH_AND_DB.md) for how `auth.users` maps to `public.users`.
+Apply SQL migrations in `supabase/migrations/` to your Supabase project (`supabase db push` with CLI, or run SQL in the SQL editor). See [docs/SUPABASE.md](docs/SUPABASE.md) for verification steps and [docs/AUTH_AND_DB.md](docs/AUTH_AND_DB.md) for how `auth.users` maps to `public.users`.
+
+Optional demo data: after migrations, run `supabase db seed` or `psql "$DATABASE_URL" -f supabase/seed.sql` (see `supabase/config.toml`).
 
 ### API (Go)
 

@@ -1,0 +1,6 @@
+# Supabase CLI: https://supabase.com/docs/guides/cli/config
+# After `supabase link`, run `supabase db push` and `supabase db seed`.
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]

@@ -10,14 +10,16 @@ import (
 
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/config"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/middleware"
+	"github.com/AmanKawadia26/TrustLeader/backend/internal/recentcache"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/store"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/trafficlight"
 	"github.com/go-chi/chi/v5"
 )
 
 type API struct {
-	Store *store.Store
-	Cfg   config.Config
+	Store  *store.Store
+	Cfg    config.Config
+	Recent *recentcache.Cache
 }
 
 func (a *API) Routes(r chi.Router) {
@@ -25,6 +27,7 @@ func (a *API) Routes(r chi.Router) {
 	r.Get("/businesses", a.ListBusinesses)
 	r.Get("/businesses/{id}", a.GetBusiness)
 	r.Get("/businesses/{id}/reviews", a.GetBusinessReviews)
+	r.Get("/reviews/recent", a.GetRecentReviews)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.SupabaseJWT(a.Cfg.SupabaseJWTSecret, a.Cfg.SupabaseJWTIssuer))
 		r.Post("/reviews", a.CreateReview)
@@ -108,6 +111,35 @@ func (a *API) GetBusinessReviews(w http.ResponseWriter, r *http.Request) {
 		"total":   total,
 		"page":    page,
 		"limit":   limit,
+	})
+}
+
+func (a *API) GetRecentReviews(w http.ResponseWriter, r *http.Request) {
+	if a.Recent == nil {
+		writeErr(w, http.StatusInternalServerError, "server_error", "recent reviews unavailable")
+		return
+	}
+	items, at := a.Recent.Snapshot()
+	out := make([]map[string]interface{}, 0, len(items))
+	for _, it := range items {
+		out = append(out, map[string]interface{}{
+			"id":               it.ID,
+			"rating":           it.Rating,
+			"text":             it.Text,
+			"reviewer_label":   it.ReviewerLabel,
+			"business_id":      it.BusinessID,
+			"business_name":    it.BusinessName,
+			"business_domain":  it.BusinessDomain,
+			"created_at":       it.CreatedAt.UTC().Format(time.RFC3339Nano),
+		})
+	}
+	refreshed := ""
+	if !at.IsZero() {
+		refreshed = at.UTC().Format(time.RFC3339Nano)
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"reviews":       out,
+		"refreshed_at":    refreshed,
 	})
 }
 
@@ -369,12 +401,50 @@ func (a *API) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusNotFound, "not_found", "User not found")
 		return
 	}
-	nu, err := a.Store.InsertUser(r.Context(), uid, email, "consumer")
+	role := normalizeRole(intendedRoleFromJWT(r))
+	nu, err := a.Store.InsertUser(r.Context(), uid, email, role)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "server_error", err.Error())
 		return
 	}
 	writeJSON(w, http.StatusOK, formatUser(*nu))
+}
+
+func intendedRoleFromJWT(r *http.Request) string {
+	raw := r.Header.Get("Authorization")
+	if !strings.HasPrefix(strings.ToLower(raw), "bearer ") {
+		return ""
+	}
+	parts := strings.Split(strings.TrimSpace(raw[7:]), ".")
+	if len(parts) != 3 {
+		return ""
+	}
+	buf, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		buf, err = base64.StdEncoding.DecodeString(parts[1])
+		if err != nil {
+			return ""
+		}
+	}
+	var m map[string]interface{}
+	if json.Unmarshal(buf, &m) != nil {
+		return ""
+	}
+	um, ok := m["user_metadata"].(map[string]interface{})
+	if !ok {
+		return ""
+	}
+	s, _ := um["intended_role"].(string)
+	return s
+}
+
+func normalizeRole(s string) string {
+	switch s {
+	case "company", "consumer", "reseller", "admin":
+		return s
+	default:
+		return "consumer"
+	}
 }
 
 func jwtEmail(r *http.Request) string {
@@ -404,13 +474,30 @@ func jwtEmail(r *http.Request) string {
 }
 
 func formatBusiness(b store.Business) map[string]interface{} {
-	return map[string]interface{}{
-		"id": b.ID, "domain": b.Domain, "name": b.Name, "description": b.Description,
-		"traffic_light": b.TrafficLight, "green_insurance_eligible": b.GreenInsuranceEligible,
-		"review_count": b.ReviewCount, "average_rating": b.AverageRating,
-		"created_at": b.CreatedAt.UTC().Format(time.RFC3339Nano),
-		"updated_at": b.UpdatedAt.UTC().Format(time.RFC3339Nano),
+	m := map[string]interface{}{
+		"id":               b.ID,
+		"domain":           b.Domain,
+		"name":             b.Name,
+		"description":      b.Description,
+		"traffic_light":    b.TrafficLight,
+		"insurance_proof":  b.InsuranceProof,
+		"listing_source":   b.ListingSource,
+		"listing_status":   b.ListingStatus,
+		"review_count":     b.ReviewCount,
+		"average_rating":   b.AverageRating,
+		"created_at":       b.CreatedAt.UTC().Format(time.RFC3339Nano),
+		"updated_at":       b.UpdatedAt.UTC().Format(time.RFC3339Nano),
 	}
+	if b.Insurance != nil {
+		ic := b.Insurance
+		m["insurance"] = map[string]interface{}{
+			"id": ic.ID, "name": ic.Name, "slug": ic.Slug,
+			"logo_url": ic.LogoURL, "description": ic.Description, "terms_url": ic.TermsURL,
+		}
+	} else {
+		m["insurance"] = nil
+	}
+	return m
 }
 
 func formatReview(r store.Review) map[string]interface{} {

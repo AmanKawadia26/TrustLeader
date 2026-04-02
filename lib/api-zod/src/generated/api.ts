@@ -34,7 +34,25 @@ export const ListBusinessesResponse = zod.object({
       name: zod.string(),
       description: zod.string().nullish(),
       traffic_light: zod.enum(["red", "orange", "green"]),
-      green_insurance_eligible: zod.boolean(),
+      insurance_proof: zod
+        .boolean()
+        .describe("Insurer has acknowledged coverage via TrustLeader"),
+      listing_source: zod.enum([
+        "owner_claimed",
+        "import_scrape",
+        "consumer_first_review",
+      ]),
+      listing_status: zod.enum(["pending_verification", "active", "archived"]),
+      insurance: zod
+        .object({
+          id: zod.string(),
+          name: zod.string(),
+          slug: zod.string(),
+          logo_url: zod.string().nullish(),
+          description: zod.string().nullish(),
+          terms_url: zod.string().nullish(),
+        })
+        .nullish(),
       review_count: zod.number(),
       average_rating: zod.number().nullish(),
       created_at: zod.date(),
@@ -59,7 +77,25 @@ export const GetBusinessResponse = zod.object({
   name: zod.string(),
   description: zod.string().nullish(),
   traffic_light: zod.enum(["red", "orange", "green"]),
-  green_insurance_eligible: zod.boolean(),
+  insurance_proof: zod
+    .boolean()
+    .describe("Insurer has acknowledged coverage via TrustLeader"),
+  listing_source: zod.enum([
+    "owner_claimed",
+    "import_scrape",
+    "consumer_first_review",
+  ]),
+  listing_status: zod.enum(["pending_verification", "active", "archived"]),
+  insurance: zod
+    .object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string(),
+      logo_url: zod.string().nullish(),
+      description: zod.string().nullish(),
+      terms_url: zod.string().nullish(),
+    })
+    .nullish(),
   review_count: zod.number(),
   average_rating: zod.number().nullish(),
   created_at: zod.date(),
@@ -77,6 +113,33 @@ export const CreateReviewBody = zod.object({
   business_id: zod.string(),
   rating: zod.number().min(1).max(createReviewBodyRatingMax),
   text: zod.string().min(createReviewBodyTextMin),
+});
+
+/**
+ * @summary Cached recent approved reviews (refreshed periodically)
+ */
+export const listRecentReviewsResponseReviewsItemRatingMax = 5;
+
+export const ListRecentReviewsResponse = zod.object({
+  reviews: zod.array(
+    zod.object({
+      id: zod.string(),
+      rating: zod
+        .number()
+        .min(1)
+        .max(listRecentReviewsResponseReviewsItemRatingMax),
+      text: zod.string(),
+      reviewer_label: zod.string(),
+      business_id: zod.string(),
+      business_name: zod.string(),
+      business_domain: zod.string(),
+      created_at: zod.date(),
+    }),
+  ),
+  refreshed_at: zod
+    .date()
+    .optional()
+    .describe("When the in-memory cache was last refreshed from the database"),
 });
 
 /**
@@ -220,7 +283,25 @@ export const GetCompanyBusinessResponse = zod.object({
   name: zod.string(),
   description: zod.string().nullish(),
   traffic_light: zod.enum(["red", "orange", "green"]),
-  green_insurance_eligible: zod.boolean(),
+  insurance_proof: zod
+    .boolean()
+    .describe("Insurer has acknowledged coverage via TrustLeader"),
+  listing_source: zod.enum([
+    "owner_claimed",
+    "import_scrape",
+    "consumer_first_review",
+  ]),
+  listing_status: zod.enum(["pending_verification", "active", "archived"]),
+  insurance: zod
+    .object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string(),
+      logo_url: zod.string().nullish(),
+      description: zod.string().nullish(),
+      terms_url: zod.string().nullish(),
+    })
+    .nullish(),
   review_count: zod.number(),
   average_rating: zod.number().nullish(),
   created_at: zod.date(),

@@ -27,6 +27,7 @@ import type {
   GetResellerReferralsParams,
   HealthStatus,
   ListBusinessesParams,
+  RecentReviewsResponse,
   ReferralListResponse,
   ResellerStats,
   RespondToReviewRequest,
@@ -386,6 +387,81 @@ export const useCreateReview = <
 > => {
   return useMutation(getCreateReviewMutationOptions(options));
 };
+
+/**
+ * @summary Cached recent approved reviews (refreshed periodically)
+ */
+export const getListRecentReviewsUrl = () => {
+  return `/api/reviews/recent`;
+};
+
+export const listRecentReviews = async (
+  options?: RequestInit,
+): Promise<RecentReviewsResponse> => {
+  return customFetch<RecentReviewsResponse>(getListRecentReviewsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListRecentReviewsQueryKey = () => {
+  return [`/api/reviews/recent`] as const;
+};
+
+export const getListRecentReviewsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listRecentReviews>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listRecentReviews>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListRecentReviewsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listRecentReviews>>
+  > = ({ signal }) => listRecentReviews({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listRecentReviews>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListRecentReviewsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listRecentReviews>>
+>;
+export type ListRecentReviewsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Cached recent approved reviews (refreshed periodically)
+ */
+
+export function useListRecentReviews<
+  TData = Awaited<ReturnType<typeof listRecentReviews>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listRecentReviews>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListRecentReviewsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Edit a review

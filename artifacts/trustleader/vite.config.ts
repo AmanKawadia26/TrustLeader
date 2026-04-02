@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import type { ServerResponse } from "http";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
@@ -51,6 +52,20 @@ export default defineConfig({
       "/api": {
         target: process.env.VITE_API_PROXY_TARGET ?? "http://127.0.0.1:8080",
         changeOrigin: true,
+        configure(proxy) {
+          proxy.on("error", (_err, _req, res) => {
+            const r = res as ServerResponse;
+            if (r.headersSent) return;
+            r.writeHead(503, { "Content-Type": "application/json; charset=utf-8" });
+            r.end(
+              JSON.stringify({
+                error: "service_unavailable",
+                message:
+                  "API server is not reachable. Start the Go backend on port 8080 with DATABASE_URL set.",
+              }),
+            );
+          });
+        },
       },
     },
     fs: {

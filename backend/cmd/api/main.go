@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/config"
+	"github.com/AmanKawadia26/TrustLeader/backend/internal/recentcache"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/server"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/store"
 )
@@ -26,7 +27,13 @@ func main() {
 	}
 	defer st.Close()
 
-	srv := server.New(cfg, st)
+	recent := recentcache.New(st)
+	if err := recent.Refresh(ctx); err != nil {
+		log.Printf("recent reviews cache initial refresh: %v", err)
+	}
+	go recent.Loop(context.Background(), cfg.RecentReviewsInterval)
+
+	srv := server.New(cfg, st, recent)
 	go func() {
 		log.Printf("api listening on %s", cfg.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

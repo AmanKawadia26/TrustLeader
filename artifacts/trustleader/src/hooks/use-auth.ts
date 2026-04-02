@@ -41,11 +41,33 @@ export function useAuth() {
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    await refreshProfile();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setUser(null);
+      return null;
+    }
+    try {
+      const profile = await getUserProfile();
+      setUser(profile);
+      return profile;
+    } catch {
+      setUser(null);
+      return null;
+    }
   };
 
-  const register = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+  const register = async (
+    email: string,
+    password: string,
+    intendedRole: "consumer" | "company" = "consumer",
+  ) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { intended_role: intendedRole },
+      },
+    });
     if (error) throw error;
     await refreshProfile();
   };

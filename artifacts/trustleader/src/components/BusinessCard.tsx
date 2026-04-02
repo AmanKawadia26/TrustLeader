@@ -34,13 +34,15 @@ export function BusinessCard({ business }: { business: Business }) {
           </p>
 
           <div className="flex items-center justify-between mt-auto pt-4 border-t">
-            {business.green_insurance_eligible && business.traffic_light === 'green' ? (
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700 dark:text-green-400">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Markel Eligible</span>
+            {business.insurance_proof && business.traffic_light === "green" && business.insurance ? (
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-green-800 dark:text-green-400">
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                <span className="truncate">{business.insurance.name}</span>
               </div>
             ) : (
-              <div /> // empty placeholder for flex layout
+              <span className="text-xs text-muted-foreground capitalize">
+                {business.listing_source.replace(/_/g, " ")}
+              </span>
             )}
             
             <div className="flex items-center text-sm font-medium text-primary group-hover:translate-x-1 transition-transform">

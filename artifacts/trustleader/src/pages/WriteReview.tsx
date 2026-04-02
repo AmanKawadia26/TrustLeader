@@ -44,13 +44,13 @@ export default function WriteReview() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <Link href={`/business/${businessId}`} className="inline-flex items-center text-muted-foreground hover:text-foreground mb-8 transition-colors">
+      <div className="max-w-2xl mx-auto px-4 py-12 bg-[hsl(var(--brand-cream))] min-h-[70vh]">
+        <Link href={`/business/${businessId}`} className="inline-flex items-center text-muted-foreground hover:text-[hsl(var(--brand-forest))] mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to profile
         </Link>
 
-        <div className="bg-card border rounded-3xl p-8 shadow-xl shadow-black/5">
-          <h1 className="text-3xl font-bold mb-2">Write a review</h1>
+        <div className="bg-card border border-border/60 rounded-3xl p-8 shadow-lg">
+          <h1 className="font-serif text-3xl font-bold text-[hsl(var(--brand-forest))] mb-2">Write a review</h1>
           <p className="text-muted-foreground mb-8 text-lg">for <span className="font-semibold text-foreground">{business?.name}</span></p>
 
           <form onSubmit={handleSubmit} className="space-y-8">

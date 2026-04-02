@@ -5,6 +5,9 @@
  * Trustleader.org API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { InsuranceCompanySummary } from "./insuranceCompanySummary";
+import type { ListingSource } from "./listingSource";
+import type { ListingStatus } from "./listingStatus";
 import type { TrafficLight } from "./trafficLight";
 
 export interface Business {
@@ -13,7 +16,11 @@ export interface Business {
   name: string;
   description?: string | null;
   traffic_light: TrafficLight;
-  green_insurance_eligible: boolean;
+  /** Insurer has acknowledged coverage via TrustLeader */
+  insurance_proof: boolean;
+  listing_source: ListingSource;
+  listing_status: ListingStatus;
+  insurance?: InsuranceCompanySummary | null;
   review_count: number;
   average_rating?: number | null;
   created_at: Date;

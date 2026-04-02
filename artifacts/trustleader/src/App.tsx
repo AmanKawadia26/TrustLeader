@@ -11,6 +11,9 @@ import "@/lib/i18n"; // initialize i18n
 const Home = lazy(() => import("@/pages/Home"));
 const BusinessProfile = lazy(() => import("@/pages/BusinessProfile"));
 const WriteReview = lazy(() => import("@/pages/WriteReview"));
+const About = lazy(() => import("@/pages/About"));
+const Categories = lazy(() => import("@/pages/Categories"));
+const SearchPage = lazy(() => import("@/pages/Search"));
 const Login = lazy(() => import("@/pages/auth/Login"));
 const Register = lazy(() => import("@/pages/auth/Register"));
 const CompanyDashboard = lazy(() => import("@/pages/dashboard/CompanyDashboard"));
@@ -50,10 +53,14 @@ function Router() {
     <Suspense fallback={<LoadingScreen />}>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/about" component={About} />
+        <Route path="/categories" component={Categories} />
+        <Route path="/search" component={SearchPage} />
         <Route path="/business/:id" component={BusinessProfile} />
         
         {/* Auth routes */}
         <Route path="/auth/login" component={Login} />
+        <Route path="/auth/register/business" component={Register} />
         <Route path="/auth/register" component={Register} />
         
         {/* Protected action routes */}

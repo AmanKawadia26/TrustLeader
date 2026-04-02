@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trustleader.org – Figma capture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <style>
+    :root { --forest: #1a4d3a; --cream: #faf8f5; --gold: #c9a227; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--cream); color: #1a2e28; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid #e8e4df; }
+    .logo { font-family: Merriweather, serif; font-weight: 700; color: var(--forest); }
+    .hero { background: var(--forest); color: #fff; padding: 4rem 2rem; text-align: center; }
+    .hero h1 { font-family: Merriweather, serif; font-size: 2.25rem; margin: 0 0 1rem; }
+    .hero p { opacity: 0.92; max-width: 36rem; margin: 0 auto; line-height: 1.6; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; max-width: 48rem; margin: 2rem auto 0; font-size: 0.85rem; }
+    .stats strong { font-family: Merriweather, serif; font-size: 1.25rem; display: block; }
+    section { padding: 3rem 2rem; max-width: 56rem; margin: 0 auto; }
+    .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .card { background: #fff; border: 1px solid #e8e4df; border-radius: 12px; padding: 1.25rem; }
+    .traffic { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+    .t-green { background: #dcfce7; color: #166534; }
+    .t-orange { background: #ffedd5; color: #9a3412; }
+    .t-red { background: #fee2e2; color: #991b1b; }
+    footer { background: var(--forest); color: #fff; padding: 2.5rem 2rem; margin-top: 2rem; }
+    footer .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; max-width: 56rem; margin: 0 auto; font-size: 0.9rem; }
+    footer h4 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.75; margin: 0 0 0.75rem; }
+    footer a { color: #fff; opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Trustleader.org</div>
+    <nav style="font-size: 0.9rem;">Categories · About · Search</nav>
+  </header>
+  <div class="hero">
+    <h1>Reviews that build real confidence</h1>
+    <p>Traffic-light signals, insurer-backed green tier, and transparent listing sources.</p>
+    <div class="stats">
+      <div><strong>2.4M+</strong><span>Verified reviews</span></div>
+      <div><strong>148K</strong><span>Businesses</span></div>
+      <div><strong>97%</strong><span>Fraud checks</span></div>
+      <div><strong>4.8</strong><span>Trust score</span></div>
+    </div>
+  </div>
+  <section>
+    <h2 style="font-family: Merriweather, serif; color: var(--forest);">Traffic light (company page)</h2>
+    <p style="color: #555; margin-bottom: 1.5rem;">Red: below 2★ average. Orange: 2–5★ without insurer seal. Green: insurer acknowledged via TrustLeader.</p>
+    <div class="cards">
+      <div class="card"><span class="traffic t-red">Red</span><p style="margin: 0.75rem 0 0; font-size: 0.9rem;">We do not recommend — aggregate under 2★.</p></div>
+      <div class="card"><span class="traffic t-orange">Orange</span><p style="margin: 0.75rem 0 0; font-size: 0.9rem;">No insurer seal — proceed with caution.</p></div>
+      <div class="card"><span class="traffic t-green">Green</span><p style="margin: 0.75rem 0 0; font-size: 0.9rem;">Insurance-backed — eligible protections may apply.</p></div>
+      <div class="card"><strong>Listing source</strong><p style="margin: 0.5rem 0 0; font-size: 0.9rem;">Owner claimed · Import/scrape · Consumer first review</p></div>
+    </div>
+  </section>
+  <footer>
+    <div class="cols">
+      <div><strong>Trustleader.org</strong><p style="opacity: 0.85; font-size: 0.85rem;">Authentic reviews with clear trust signals.</p></div>
+      <div><h4>For consumers</h4>Search · Write · Categories</div>
+      <div><h4>For businesses</h4>Claim profile · Business sign up</div>
+    </div>
+  </footer>
+</body>
+</html>

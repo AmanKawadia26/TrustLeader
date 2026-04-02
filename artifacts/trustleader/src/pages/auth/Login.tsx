@@ -20,21 +20,23 @@ export default function Login() {
     e.preventDefault();
     if (!email || !password) return;
     
-    await login(email, password);
-    setLocation("/dashboard/consumer");
+    const profile = await login(email, password);
+    if (profile?.role === "company") setLocation("/dashboard/company");
+    else if (profile?.role === "reseller") setLocation("/dashboard/reseller");
+    else setLocation("/dashboard/consumer");
   };
 
   return (
     <Layout>
-      <div className="min-h-[80vh] flex flex-col justify-center items-center px-4 py-12 bg-slate-50 dark:bg-slate-950">
-        <div className="w-full max-w-md bg-card border rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/5">
-          <div className="flex justify-center mb-6">
-            <div className="bg-primary/10 p-3 rounded-2xl">
-              <Shield className="w-8 h-8 text-primary" />
+      <div className="min-h-[80vh] flex flex-col justify-center items-center px-4 py-12 bg-[hsl(var(--brand-cream))]">
+        <div className="w-full max-w-md bg-card border border-border/60 rounded-3xl p-8 sm:p-10 shadow-xl">
+          <div className="flex justify-center mb-4">
+            <div className="bg-[hsl(var(--brand-forest))]/10 p-3 rounded-2xl">
+              <Shield className="w-8 h-8 text-[hsl(var(--brand-forest))]" />
             </div>
           </div>
-          
-          <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8">{t('auth.login.title')}</h1>
+          <p className="text-center text-sm text-muted-foreground mb-2">Log in to your TrustLeader account</p>
+          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-center text-[hsl(var(--brand-forest))] mb-8">{t('auth.login.title')}</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -60,13 +62,14 @@ export default function Login() {
               />
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base rounded-xl font-semibold">
+            <Button type="submit" className="w-full h-12 text-base rounded-xl font-semibold bg-[hsl(var(--brand-forest))] hover:bg-[hsl(var(--brand-forest))]/90 text-[hsl(var(--brand-cream))]">
               {t('auth.login.submit')}
             </Button>
           </form>
 
           <p className="text-center mt-8 text-sm text-muted-foreground">
-            Don't have an account? <Link href="/auth/register" className="text-primary font-medium hover:underline">Sign up</Link>
+            Don&apos;t have an account?{" "}
+            <Link href="/auth/register" className="text-[hsl(var(--brand-forest))] font-medium hover:underline">Sign up</Link>
           </p>
         </div>
       </div>

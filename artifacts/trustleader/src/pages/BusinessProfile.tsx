@@ -3,7 +3,7 @@ import { Layout } from "@/components/Layout";
 import { useBusinessQuery } from "@/hooks/use-businesses";
 import { useBusinessReviewsQuery } from "@/hooks/use-reviews";
 import { TrafficLightBadge } from "@/components/TrafficLightBadge";
-import { MarkelGuaranteeBanner } from "@/components/MarkelGuaranteeBanner";
+import { InsuranceBanner } from "@/components/InsuranceBanner";
 import { StarRating } from "@/components/StarRating";
 import { ReviewCard } from "@/components/ReviewCard";
 import { Button } from "@/components/ui/button";
@@ -27,14 +27,17 @@ export default function BusinessProfile() {
 
   return (
     <Layout>
-      <div className="bg-slate-50 dark:bg-slate-900 border-b">
+      <div className="bg-[hsl(var(--brand-cream))] border-b border-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <div className="flex flex-col md:flex-row gap-8 items-start justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
                 <TrafficLightBadge status={business.traffic_light} size="lg" />
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground rounded-full border px-3 py-1 bg-background/80">
+                  {business.listing_source.replace(/_/g, " ")}
+                </span>
               </div>
-              <h1 className="text-4xl font-extrabold tracking-tight mb-2">{business.name}</h1>
+              <h1 className="font-serif text-4xl font-bold tracking-tight text-[hsl(var(--brand-forest))] mb-2">{business.name}</h1>
               <a href={`https://${business.domain}`} target="_blank" rel="noreferrer" className="inline-flex items-center text-lg text-primary hover:underline mb-6">
                 {business.domain} <ExternalLink className="w-4 h-4 ml-1.5" />
               </a>
@@ -62,9 +65,9 @@ export default function BusinessProfile() {
             </div>
           </div>
 
-          {business.traffic_light === 'green' && business.green_insurance_eligible && (
+          {business.insurance_proof && business.traffic_light === "green" && business.insurance && (
             <div className="mt-8 max-w-3xl">
-              <MarkelGuaranteeBanner />
+              <InsuranceBanner insurance={business.insurance} />
             </div>
           )}
         </div>

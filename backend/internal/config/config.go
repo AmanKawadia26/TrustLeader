@@ -4,15 +4,17 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
-	Addr               string
-	DatabaseURL        string
-	SupabaseJWTSecret  string
-	SupabaseJWTIssuer  string
-	CORSAllowedOrigins []string
-	RateLimitPerMin    int
+	Addr                    string
+	DatabaseURL             string
+	SupabaseJWTSecret       string
+	SupabaseJWTIssuer       string
+	CORSAllowedOrigins      []string
+	RateLimitPerMin         int
+	RecentReviewsInterval   time.Duration
 }
 
 func Load() Config {
@@ -33,12 +35,19 @@ func Load() Config {
 			origins[i] = strings.TrimSpace(origins[i])
 		}
 	}
+	ri := time.Hour
+	if s := os.Getenv("RECENT_REVIEWS_INTERVAL"); s != "" {
+		if d, err := time.ParseDuration(s); err == nil && d >= time.Minute {
+			ri = d
+		}
+	}
 	return Config{
-		Addr:               ":" + port,
-		DatabaseURL:        os.Getenv("DATABASE_URL"),
-		SupabaseJWTSecret:  os.Getenv("SUPABASE_JWT_SECRET"),
-		SupabaseJWTIssuer:  os.Getenv("SUPABASE_JWT_ISSUER"),
-		CORSAllowedOrigins: origins,
-		RateLimitPerMin:    rl,
+		Addr:                  ":" + port,
+		DatabaseURL:           os.Getenv("DATABASE_URL"),
+		SupabaseJWTSecret:     os.Getenv("SUPABASE_JWT_SECRET"),
+		SupabaseJWTIssuer:     os.Getenv("SUPABASE_JWT_ISSUER"),
+		CORSAllowedOrigins:    origins,
+		RateLimitPerMin:       rl,
+		RecentReviewsInterval: ri,
 	}
 }

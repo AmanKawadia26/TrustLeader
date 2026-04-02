@@ -6,6 +6,7 @@ import (
 
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/config"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/handler"
+	"github.com/AmanKawadia26/TrustLeader/backend/internal/recentcache"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -13,7 +14,7 @@ import (
 	"github.com/go-chi/httprate"
 )
 
-func New(cfg config.Config, st *store.Store) *http.Server {
+func New(cfg config.Config, st *store.Store, recent *recentcache.Cache) *http.Server {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -28,7 +29,7 @@ func New(cfg config.Config, st *store.Store) *http.Server {
 		MaxAge:           300,
 	}))
 
-	api := &handler.API{Store: st, Cfg: cfg}
+	api := &handler.API{Store: st, Cfg: cfg, Recent: recent}
 	r.Route("/api", func(r chi.Router) {
 		api.Routes(r)
 	})

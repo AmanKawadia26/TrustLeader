@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/AmanKawadia26/TrustLeader/backend/internal/dbconn"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -22,6 +23,7 @@ func New(ctx context.Context, databaseURL string) (*Store, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse db config: %w", err)
 	}
+	dbconn.ApplyPreferIPv4(cfg.ConnConfig)
 	cfg.MaxConns = 32
 	cfg.MinConns = 2
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
@@ -30,24 +32,37 @@ func New(ctx context.Context, databaseURL string) (*Store, error) {
 	}
 	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
-		return nil, fmt.Errorf("ping db: %w", err)
+		return nil, dbconn.WrapPingError(fmt.Errorf("ping db: %w", err))
 	}
 	return &Store{Pool: pool}, nil
 }
 
 func (s *Store) Close() { s.Pool.Close() }
 
+type InsuranceCompany struct {
+	ID          string
+	Name        string
+	Slug        string
+	LogoURL     *string
+	Description *string
+	TermsURL    *string
+}
+
 type Business struct {
-	ID                     string
-	Domain                 string
-	Name                   string
-	Description            *string
-	TrafficLight           string
-	GreenInsuranceEligible bool
-	ReviewCount            int
-	AverageRating          *float32
-	CreatedAt              time.Time
-	UpdatedAt              time.Time
+	ID               string
+	Domain           string
+	Name             string
+	Description      *string
+	TrafficLight     string
+	InsuranceProof   bool
+	ListingSource    string
+	ListingStatus    string
+	InsuranceID      *string
+	ReviewCount      int
+	AverageRating    *float32
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	Insurance        *InsuranceCompany
 }
 
 type Review struct {
@@ -61,6 +76,18 @@ type Review struct {
 	BusinessName    *string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+}
+
+// RecentReviewPublic is a denormalized row for the home page recent-reviews cache.
+type RecentReviewPublic struct {
+	ID             string
+	Rating         int
+	Text           string
+	ReviewerLabel  string
+	BusinessID     string
+	BusinessName   string
+	BusinessDomain string
+	CreatedAt      time.Time
 }
 
 type User struct {
@@ -90,18 +117,22 @@ func (s *Store) ListBusinesses(ctx context.Context, q string, page, limit int) (
 		limit = 20
 	}
 	offset := (page - 1) * limit
-	base := `SELECT id, domain, name, description, traffic_light::text, green_insurance_eligible, review_count, average_rating, created_at, updated_at FROM businesses`
-	order := ` ORDER BY review_count DESC NULLS LAST`
+	base := `SELECT b.id, b.domain, b.name, b.description, b.traffic_light::text, b.insurance_proof,
+		b.listing_source::text, b.listing_status::text, b.insurance_company_id, b.review_count, b.average_rating, b.created_at, b.updated_at,
+		ic.id, ic.name, ic.slug, ic.logo_url, ic.description, ic.terms_url
+		FROM businesses b
+		LEFT JOIN insurance_companies ic ON ic.id = b.insurance_company_id`
+	order := ` ORDER BY b.review_count DESC NULLS LAST`
 	var rows pgx.Rows
 	var err error
 	var total int
 	if q != "" {
 		pat := "%" + q + "%"
-		err = s.Pool.QueryRow(ctx, `SELECT COUNT(*) FROM businesses WHERE LOWER(name) LIKE LOWER($1) OR LOWER(domain) LIKE LOWER($1)`, pat).Scan(&total)
+		err = s.Pool.QueryRow(ctx, `SELECT COUNT(*) FROM businesses WHERE name ILIKE $1 OR domain ILIKE $1`, pat).Scan(&total)
 		if err != nil {
 			return nil, 0, err
 		}
-		rows, err = s.Pool.Query(ctx, base+` WHERE LOWER(name) LIKE LOWER($1) OR LOWER(domain) LIKE LOWER($1)`+order+` LIMIT $2 OFFSET $3`, pat, limit, offset)
+		rows, err = s.Pool.Query(ctx, base+` WHERE b.name ILIKE $1 OR b.domain ILIKE $1`+order+` LIMIT $2 OFFSET $3`, pat, limit, offset)
 	} else {
 		err = s.Pool.QueryRow(ctx, `SELECT COUNT(*) FROM businesses`).Scan(&total)
 		if err != nil {
@@ -119,32 +150,76 @@ func (s *Store) ListBusinesses(ctx context.Context, q string, page, limit int) (
 func scanBusinesses(rows pgx.Rows, total int) ([]Business, int, error) {
 	var out []Business
 	for rows.Next() {
-		var b Business
-		var tl string
-		err := rows.Scan(&b.ID, &b.Domain, &b.Name, &b.Description, &tl, &b.GreenInsuranceEligible, &b.ReviewCount, &b.AverageRating, &b.CreatedAt, &b.UpdatedAt)
+		b, err := scanBusinessRow(rows)
 		if err != nil {
 			return nil, 0, err
 		}
-		b.TrafficLight = tl
 		out = append(out, b)
 	}
 	return out, total, rows.Err()
 }
 
-func (s *Store) GetBusiness(ctx context.Context, id string) (*Business, error) {
-	row := s.Pool.QueryRow(ctx, `SELECT id, domain, name, description, traffic_light::text, green_insurance_eligible, review_count, average_rating, created_at, updated_at
-		FROM businesses WHERE id = $1`, id)
+func scanBusinessRow(rows pgx.Rows) (Business, error) {
 	var b Business
 	var tl string
-	err := row.Scan(&b.ID, &b.Domain, &b.Name, &b.Description, &tl, &b.GreenInsuranceEligible, &b.ReviewCount, &b.AverageRating, &b.CreatedAt, &b.UpdatedAt)
+	var icID, icName, icSlug *string
+	var icLogo, icDesc, icTerms *string
+	err := rows.Scan(
+		&b.ID, &b.Domain, &b.Name, &b.Description, &tl, &b.InsuranceProof,
+		&b.ListingSource, &b.ListingStatus, &b.InsuranceID, &b.ReviewCount, &b.AverageRating, &b.CreatedAt, &b.UpdatedAt,
+		&icID, &icName, &icSlug, &icLogo, &icDesc, &icTerms,
+	)
+	if err != nil {
+		return Business{}, err
+	}
+	b.TrafficLight = tl
+	if icID != nil && icName != nil && icSlug != nil {
+		b.Insurance = &InsuranceCompany{
+			ID: *icID, Name: *icName, Slug: *icSlug,
+			LogoURL: icLogo, Description: icDesc, TermsURL: icTerms,
+		}
+	}
+	return b, nil
+}
+
+func (s *Store) GetBusiness(ctx context.Context, id string) (*Business, error) {
+	row := s.Pool.QueryRow(ctx, `SELECT b.id, b.domain, b.name, b.description, b.traffic_light::text, b.insurance_proof,
+		b.listing_source::text, b.listing_status::text, b.insurance_company_id, b.review_count, b.average_rating, b.created_at, b.updated_at,
+		ic.id, ic.name, ic.slug, ic.logo_url, ic.description, ic.terms_url
+		FROM businesses b
+		LEFT JOIN insurance_companies ic ON ic.id = b.insurance_company_id
+		WHERE b.id = $1`, id)
+	b, err := scanBusinessRowSingle(row)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
-	b.TrafficLight = tl
 	return &b, nil
+}
+
+func scanBusinessRowSingle(row pgx.Row) (Business, error) {
+	var b Business
+	var tl string
+	var icID, icName, icSlug *string
+	var icLogo, icDesc, icTerms *string
+	err := row.Scan(
+		&b.ID, &b.Domain, &b.Name, &b.Description, &tl, &b.InsuranceProof,
+		&b.ListingSource, &b.ListingStatus, &b.InsuranceID, &b.ReviewCount, &b.AverageRating, &b.CreatedAt, &b.UpdatedAt,
+		&icID, &icName, &icSlug, &icLogo, &icDesc, &icTerms,
+	)
+	if err != nil {
+		return Business{}, err
+	}
+	b.TrafficLight = tl
+	if icID != nil && icName != nil && icSlug != nil {
+		b.Insurance = &InsuranceCompany{
+			ID: *icID, Name: *icName, Slug: *icSlug,
+			LogoURL: icLogo, Description: icDesc, TermsURL: icTerms,
+		}
+	}
+	return b, nil
 }
 
 func (s *Store) ListBusinessReviewsPublic(ctx context.Context, businessID string, page, limit int) ([]Review, int, error) {
@@ -176,6 +251,42 @@ func (s *Store) ListBusinessReviewsPublic(ctx context.Context, businessID string
 		list = append(list, r)
 	}
 	return list, total, rows.Err()
+}
+
+func (s *Store) ListRecentReviewsPublic(ctx context.Context, limit int) ([]RecentReviewPublic, error) {
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	rows, err := s.Pool.Query(ctx, `
+		SELECT r.id, r.rating, r.text, r.created_at,
+			b.id, b.name, b.domain,
+			NULLIF(TRIM(SPLIT_PART(u.email, '@', 1)), '')
+		FROM reviews r
+		INNER JOIN businesses b ON b.id = r.business_id
+		INNER JOIN users u ON u.id = r.user_id
+		WHERE r.status = 'approved'
+		ORDER BY r.created_at DESC
+		LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var list []RecentReviewPublic
+	for rows.Next() {
+		var r RecentReviewPublic
+		var label *string
+		err := rows.Scan(&r.ID, &r.Rating, &r.Text, &r.CreatedAt, &r.BusinessID, &r.BusinessName, &r.BusinessDomain, &label)
+		if err != nil {
+			return nil, err
+		}
+		if label != nil && *label != "" {
+			r.ReviewerLabel = *label
+		} else {
+			r.ReviewerLabel = "Reviewer"
+		}
+		list = append(list, r)
+	}
+	return list, rows.Err()
 }
 
 func (s *Store) GetUser(ctx context.Context, id string) (*User, error) {

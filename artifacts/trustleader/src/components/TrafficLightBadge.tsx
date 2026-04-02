@@ -21,22 +21,22 @@ export function TrafficLightBadge({
       border: "border-green-200 dark:border-green-900",
       text: "text-green-800 dark:text-green-300",
       dot: "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]",
-      label: "Strong Trust Signal"
+      label: "Insurance-backed: eligible protections may apply",
     },
     orange: {
-      bg: "bg-orange-100 dark:bg-orange-950",
-      border: "border-orange-200 dark:border-orange-900",
-      text: "text-orange-800 dark:text-orange-300",
-      dot: "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]",
-      label: "Caution"
+      bg: "bg-amber-100 dark:bg-amber-950",
+      border: "border-amber-200 dark:border-amber-900",
+      text: "text-amber-900 dark:text-amber-200",
+      dot: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.75)]",
+      label: "No insurer seal: proceed with caution",
     },
     red: {
       bg: "bg-red-100 dark:bg-red-950",
       border: "border-red-200 dark:border-red-900",
       text: "text-red-800 dark:text-red-300",
       dot: "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]",
-      label: "High Risk"
-    }
+      label: "We do not recommend (below 2★ average)",
+    },
   }[status];
 
   const sizeClasses = {
