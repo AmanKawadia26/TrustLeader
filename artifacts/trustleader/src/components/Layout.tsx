@@ -145,17 +145,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/search" className="text-neutral-200 hover:underline">
-                  Search reviews
+                  {t("footer.searchReviews")}
                 </Link>
               </li>
               <li>
                 <Link href="/categories" className="text-neutral-200 hover:underline">
-                  Browse categories
+                  {t("footer.browseCategories")}
                 </Link>
               </li>
               <li>
                 <Link href="/auth/register" className="text-neutral-200 hover:underline">
-                  Write a review
+                  {t("footer.writeReview")}
                 </Link>
               </li>
             </ul>
@@ -164,15 +164,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-3">{t("footer.forBusinesses")}</p>
             <ul className="space-y-2 text-sm">
               <li>
-                <span className="text-neutral-200">Claim your profile</span>
-              </li>
-              <li>
-                <Link href="/auth/register/business" className="text-neutral-200 hover:underline">
-                  Business sign up
+                <Link href="/dashboard/company" className="text-neutral-200 hover:underline">
+                  {t("footer.claimProfile")}
                 </Link>
               </li>
               <li>
-                <span className="text-neutral-400">API access</span>
+                <Link href="/auth/register/business" className="text-neutral-200 hover:underline">
+                  {t("footer.businessSignup")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/developers" className="text-neutral-200 hover:underline">
+                  {t("footer.apiAccess")}
+                </Link>
               </li>
             </ul>
           </div>
@@ -181,14 +185,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/about" className="text-neutral-200 hover:underline">
-                  About us
+                  {t("footer.aboutUs")}
                 </Link>
               </li>
               <li>
-                <span className="text-neutral-400">Trust &amp; safety</span>
+                <Link href="/about" className="text-neutral-200 hover:underline">
+                  {t("footer.trustSafety")}
+                </Link>
               </li>
               <li>
-                <span className="text-neutral-400">Privacy &amp; terms</span>
+                <Link href="/privacy" className="text-neutral-200 hover:underline">
+                  {t("footer.privacy")}
+                </Link>
+                {" · "}
+                <Link href="/terms" className="text-neutral-200 hover:underline">
+                  {t("footer.terms")}
+                </Link>
               </li>
             </ul>
           </div>

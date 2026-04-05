@@ -1,5 +1,5 @@
-import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { ShieldCheck, AlertTriangle, Ban } from "lucide-react";
 import type { TrafficLight } from "@workspace/api-client-react";
 
 interface TrafficLightBadgeProps {
@@ -9,11 +9,17 @@ interface TrafficLightBadgeProps {
   size?: "sm" | "md" | "lg";
 }
 
-export function TrafficLightBadge({ 
-  status, 
-  className, 
+const statusIcon = {
+  green: ShieldCheck,
+  orange: AlertTriangle,
+  red: Ban,
+} as const;
+
+export function TrafficLightBadge({
+  status,
+  className,
   showLabel = true,
-  size = "md" 
+  size = "md",
 }: TrafficLightBadgeProps) {
   const config = {
     green: {
@@ -39,27 +45,42 @@ export function TrafficLightBadge({
     },
   }[status];
 
+  const Icon = statusIcon[status];
   const sizeClasses = {
     sm: "px-2 py-1 text-xs gap-1.5",
     md: "px-3 py-1.5 text-sm gap-2",
-    lg: "px-4 py-2 text-base gap-3"
+    lg: "px-4 py-2 text-base gap-3",
   }[size];
 
   const dotSize = {
     sm: "w-1.5 h-1.5",
     md: "w-2 h-2",
-    lg: "w-3 h-3"
+    lg: "w-3 h-3",
   }[size];
 
+  const iconSize = {
+    sm: "h-3 w-3",
+    md: "h-3.5 w-3.5",
+    lg: "h-4 w-4",
+  }[size];
+
+  const ariaLabel = `Trust signal: ${config.label}`;
+
   return (
-    <div 
+    <div
+      role="status"
+      aria-label={ariaLabel}
       className={twMerge(
         "inline-flex items-center rounded-full border font-medium transition-all",
-        config.bg, config.border, config.text, sizeClasses,
+        config.bg,
+        config.border,
+        config.text,
+        sizeClasses,
         className
       )}
     >
-      <div className={twMerge("rounded-full animate-pulse", config.dot, dotSize)} />
+      <Icon className={twMerge("shrink-0 opacity-90", iconSize)} aria-hidden />
+      <div className={twMerge("rounded-full animate-pulse", config.dot, dotSize)} aria-hidden />
       {showLabel && <span>{config.label}</span>}
     </div>
   );

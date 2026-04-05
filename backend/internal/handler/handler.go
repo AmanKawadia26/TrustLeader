@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -35,6 +36,7 @@ func (a *API) Routes(r chi.Router) {
 		r.Get("/dashboard/company/business", a.GetCompanyBusiness)
 		r.Get("/dashboard/company/reviews", a.GetCompanyReviews)
 		r.Post("/dashboard/company/respond", a.RespondToReview)
+		r.Post("/dashboard/company/claim", a.ClaimCompanyBusiness)
 		r.Get("/dashboard/consumer/reviews", a.GetConsumerReviews)
 		r.Get("/dashboard/reseller/stats", a.GetResellerStats)
 		r.Get("/dashboard/reseller/referrals", a.GetResellerReferrals)
@@ -379,6 +381,42 @@ func (a *API) GetResellerReferrals(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{"referrals": out, "total": total, "page": page, "limit": limit})
+}
+
+func (a *API) ClaimCompanyBusiness(w http.ResponseWriter, r *http.Request) {
+	uid, ok := middleware.UserIDFromContext(r.Context())
+	if !ok {
+		writeErr(w, http.StatusUnauthorized, "unauthorized", "Missing user")
+		return
+	}
+	var body struct {
+		BusinessID string `json:"business_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || strings.TrimSpace(body.BusinessID) == "" {
+		writeErr(w, http.StatusBadRequest, "bad_request", "business_id is required")
+		return
+	}
+	u, err := a.Store.ClaimBusiness(r.Context(), uid, strings.TrimSpace(body.BusinessID))
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrClaimNotCompanyRole):
+			writeErr(w, http.StatusForbidden, "forbidden", err.Error())
+		case errors.Is(err, store.ErrClaimAlreadyOtherBusiness):
+			writeErr(w, http.StatusConflict, "conflict", err.Error())
+		case errors.Is(err, store.ErrClaimBusinessTaken):
+			writeErr(w, http.StatusConflict, "conflict", err.Error())
+		case errors.Is(err, store.ErrClaimBusinessNotFound):
+			writeErr(w, http.StatusNotFound, "not_found", err.Error())
+		default:
+			writeErr(w, http.StatusInternalServerError, "server_error", err.Error())
+		}
+		return
+	}
+	if u == nil {
+		writeErr(w, http.StatusInternalServerError, "server_error", "user not found after claim")
+		return
+	}
+	writeJSON(w, http.StatusOK, formatUser(*u))
 }
 
 func (a *API) GetUserProfile(w http.ResponseWriter, r *http.Request) {

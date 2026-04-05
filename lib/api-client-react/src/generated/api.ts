@@ -30,6 +30,7 @@ import type {
   RecentReviewsResponse,
   ReferralListResponse,
   ResellerStats,
+  ClaimBusinessRequest,
   RespondToReviewRequest,
   Review,
   ReviewListResponse,
@@ -847,6 +848,92 @@ export const useRespondToReview = <
   TContext
 > => {
   return useMutation(getRespondToReviewMutationOptions(options));
+};
+
+/**
+ * @summary Link company account to an existing business (owner claim)
+ */
+export const getClaimCompanyBusinessUrl = () => {
+  return `/api/dashboard/company/claim`;
+};
+
+export const claimCompanyBusiness = async (
+  claimBusinessRequest: ClaimBusinessRequest,
+  options?: RequestInit,
+): Promise<UserProfile> => {
+  return customFetch<UserProfile>(getClaimCompanyBusinessUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(claimBusinessRequest),
+  });
+};
+
+export const getClaimCompanyBusinessMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof claimCompanyBusiness>>,
+    TError,
+    { data: BodyType<ClaimBusinessRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof claimCompanyBusiness>>,
+  TError,
+  { data: BodyType<ClaimBusinessRequest> },
+  TContext
+> => {
+  const mutationKey = ["claimCompanyBusiness"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof claimCompanyBusiness>>,
+    { data: BodyType<ClaimBusinessRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return claimCompanyBusiness(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ClaimCompanyBusinessMutationResult = NonNullable<
+  Awaited<ReturnType<typeof claimCompanyBusiness>>
+>;
+export type ClaimCompanyBusinessMutationBody = BodyType<ClaimBusinessRequest>;
+export type ClaimCompanyBusinessMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Link company account to an existing business (owner claim)
+ */
+export const useClaimCompanyBusiness = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof claimCompanyBusiness>>,
+    TError,
+    { data: BodyType<ClaimBusinessRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof claimCompanyBusiness>>,
+  TError,
+  { data: BodyType<ClaimBusinessRequest> },
+  TContext
+> => {
+  return useMutation(getClaimCompanyBusinessMutationOptions(options));
 };
 
 /**

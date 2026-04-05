@@ -48,39 +48,39 @@
 }
 
 :root {
-  /* Brand (forest + gold) aligned with TrustLeader shield / logo */
-  --brand-forest: 152 42% 18%;
+  /* Brand: neutral primary + gold accent (shield logo); avoid dominant green */
+  --brand-forest: 222 47% 11%;
   --brand-gold: 43 72% 48%;
   --brand-cream: 40 38% 97%;
   --brand-sand: 38 42% 92%;
 
   --background: 40 38% 97%;
-  --foreground: 152 35% 12%;
+  --foreground: 222 47% 11%;
   
   --card: 0 0% 100%;
-  --card-foreground: 152 35% 12%;
+  --card-foreground: 222 47% 11%;
   
   --popover: 0 0% 100%;
-  --popover-foreground: 152 35% 12%;
+  --popover-foreground: 222 47% 11%;
   
-  --primary: 152 42% 18%;
+  --primary: 222 47% 11%;
   --primary-foreground: 40 38% 97%;
   
   --secondary: 210 40% 96%;
   --secondary-foreground: 222 47% 11%;
   
   --muted: 38 30% 94%;
-  --muted-foreground: 152 12% 38%;
+  --muted-foreground: 215 16% 40%;
   
   --accent: 38 42% 92%;
-  --accent-foreground: 152 35% 12%;
+  --accent-foreground: 222 47% 11%;
   
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
 
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 152 42% 28%;
+  --ring: 222 12% 36%;
 
   --radius: 0.75rem;
 
@@ -149,11 +149,11 @@
   .tl-hero-bg {
     background: linear-gradient(
       120deg,
-      hsl(140 42% 91%),
+      hsl(210 42% 92%),
       hsl(200 48% 91%),
       hsl(330 42% 93%),
       hsl(38 46% 92%),
-      hsl(140 42% 91%)
+      hsl(210 42% 92%)
     );
     background-size: 400% 400%;
     animation: tl-hero-shift 18s ease infinite;

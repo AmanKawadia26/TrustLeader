@@ -14,6 +14,9 @@ const WriteReview = lazy(() => import("@/pages/WriteReview"));
 const About = lazy(() => import("@/pages/About"));
 const Categories = lazy(() => import("@/pages/Categories"));
 const SearchPage = lazy(() => import("@/pages/Search"));
+const Privacy = lazy(() => import("@/pages/Privacy"));
+const Terms = lazy(() => import("@/pages/Terms"));
+const Developers = lazy(() => import("@/pages/Developers"));
 const Login = lazy(() => import("@/pages/auth/Login"));
 const Register = lazy(() => import("@/pages/auth/Register"));
 const CompanyDashboard = lazy(() => import("@/pages/dashboard/CompanyDashboard"));
@@ -56,6 +59,9 @@ function Router() {
         <Route path="/about" component={About} />
         <Route path="/categories" component={Categories} />
         <Route path="/search" component={SearchPage} />
+        <Route path="/privacy" component={Privacy} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/developers" component={Developers} />
         <Route path="/business/:id" component={BusinessProfile} />
         
         {/* Auth routes */}

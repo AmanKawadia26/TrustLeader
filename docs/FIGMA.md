@@ -33,4 +33,4 @@ Brand CSS variables live in `artifacts/trustleader/src/index.css` (`--brand-fore
 
 ## Logo (code ↔ Figma)
 
-Header/footer use the combined wordmark SVG `artifacts/trustleader/public/logo-on-dark.svg` (green star + **TrustLeader**). The Figma file `E4ZO24w5hDBojNIQwErPdB` uses matching **TrustLeader** copy (no `.org` in the wordmark).
+Header/footer use the combined wordmark SVG [`artifacts/trustleader/public/logo-on-dark.svg`](../artifacts/trustleader/public/logo-on-dark.svg) (green star + **TrustLeader**). The Figma file `E4ZO24w5hDBojNIQwErPdB` should use the same wordmark for header/footer captures; if the canvas still shows text-only labels, re-import or paste the SVG via the Figma plugin API or manually for visual parity.

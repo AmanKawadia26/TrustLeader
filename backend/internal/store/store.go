@@ -481,3 +481,72 @@ func (s *Store) ListReferrals(ctx context.Context, resellerID string, page, limi
 	}
 	return list, total, rows.Err()
 }
+
+// Claim errors for HTTP mapping.
+var (
+	ErrClaimNotCompanyRole       = errors.New("claim: user must have company role")
+	ErrClaimAlreadyOtherBusiness = errors.New("claim: account is already linked to a different business")
+	ErrClaimBusinessTaken        = errors.New("claim: this business is already linked to another account")
+	ErrClaimBusinessNotFound     = errors.New("claim: business not found")
+)
+
+// ClaimBusiness links a company-role user to an existing business (owner claim).
+// Idempotent if the user is already linked to the same business_id.
+func (s *Store) ClaimBusiness(ctx context.Context, userID, businessID string) (*User, error) {
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	var role string
+	var existingBid *string
+	err = tx.QueryRow(ctx, `SELECT role::text, business_id FROM users WHERE id = $1 FOR UPDATE`, userID).Scan(&role, &existingBid)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, fmt.Errorf("user not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+	if role != "company" {
+		return nil, ErrClaimNotCompanyRole
+	}
+	if existingBid != nil {
+		if *existingBid == businessID {
+			if err := tx.Rollback(ctx); err != nil {
+				return nil, err
+			}
+			return s.GetUser(ctx, userID)
+		}
+		return nil, ErrClaimAlreadyOtherBusiness
+	}
+
+	var one int
+	err = tx.QueryRow(ctx, `SELECT 1 FROM businesses WHERE id = $1`, businessID).Scan(&one)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrClaimBusinessNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var otherID string
+	err = tx.QueryRow(ctx, `SELECT id FROM users WHERE business_id = $1 AND id <> $2 LIMIT 1`, businessID, userID).Scan(&otherID)
+	if err == nil {
+		return nil, ErrClaimBusinessTaken
+	}
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return nil, err
+	}
+
+	if _, err := tx.Exec(ctx, `UPDATE users SET business_id = $1, updated_at = NOW() WHERE id = $2`, businessID, userID); err != nil {
+		return nil, err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE businesses SET owner_user_id = $1, listing_source = 'owner_claimed', updated_at = NOW() WHERE id = $2`, userID, businessID); err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return s.GetUser(ctx, userID)
+}

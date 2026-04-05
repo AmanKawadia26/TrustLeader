@@ -151,6 +151,11 @@ export interface RespondToReviewRequest {
   response: string;
 }
 
+export interface ClaimBusinessRequest {
+  /** Existing business UUID to claim as owner */
+  business_id: string;
+}
+
 export interface ResellerStats {
   total_referrals: number;
   approved_referrals: number;

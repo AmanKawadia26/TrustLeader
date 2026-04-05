@@ -43,6 +43,8 @@ onlyBuiltDependencies:
   - msw
   - unrs-resolver
 
+# Changing overrides requires refreshing the lockfile or Vercel fails with ERR_PNPM_LOCKFILE_CONFIG_MISMATCH:
+#   pnpm install
 overrides:
   '@esbuild-kit/esm-loader': npm:tsx@^4.21.0
   '@expo/ngrok-bin>@expo/ngrok-bin-darwin-arm64': '-'

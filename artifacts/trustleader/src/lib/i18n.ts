@@ -59,6 +59,17 @@ const resources = {
       "home.cat.tech": "Electronics",
       "home.cat.fitness": "Fitness",
       "footer.chooseCountry": "Choose country",
+      "footer.searchReviews": "Search reviews",
+      "footer.browseCategories": "Browse categories",
+      "footer.writeReview": "Write a review",
+      "footer.claimProfile": "Claim your profile",
+      "footer.businessSignup": "Business sign up",
+      "footer.apiAccess": "API access",
+      "footer.aboutUs": "About us",
+      "footer.trustSafety": "Trust & safety",
+      "footer.privacyTerms": "Privacy & terms",
+      "footer.privacy": "Privacy",
+      "footer.terms": "Terms",
       
       "business.reviews": "Reviews",
       "business.writeReview": "Write a Review",
@@ -88,11 +99,29 @@ const resources = {
       
       "dash.company.title": "Company Dashboard",
       "dash.company.respond": "Respond to Review",
+      "dash.company.claimIntro": "Link your account to a business profile by entering its business ID (UUID from search or support).",
+      "dash.company.claimPlaceholder": "Business ID (UUID)",
+      "dash.company.claimSubmit": "Link business",
+      "dash.company.claimHint": "Find a business in Search; the profile URL contains the ID. Your account must use the company role.",
+      "dash.company.recentReviews": "Recent Reviews",
+      "dash.company.reviewsAfterClaim": "Reviews for your business will appear here after you link a profile above.",
+      "dash.company.reviewsUnavailable": "Reviews could not be loaded. Try again later.",
+      "dash.company.loadError": "Could not load company profile.",
       "dash.consumer.title": "My Reviews",
       "dash.consumer.edit": "Edit Review",
       "dash.reseller.title": "Reseller Dashboard",
       "dash.reseller.referrals": "Total Referrals",
-      "dash.reseller.earnings": "Total Earnings"
+      "dash.reseller.earnings": "Total Earnings",
+
+      "legal.privacy.title": "Privacy",
+      "legal.privacy.body":
+        "TrustLeader processes account and usage data to operate the platform and improve trust signals. For full details, contact your administrator or refer to the privacy policy published by your deployment.\n\nThis placeholder page is provided for navigation; replace with your jurisdiction-specific policy.",
+      "legal.terms.title": "Terms of use",
+      "legal.terms.body":
+        "By using TrustLeader you agree to post accurate reviews and comply with applicable laws. Business accounts must represent the entity they claim.\n\nThis placeholder page is provided for navigation; replace with counsel-approved terms for your deployment.",
+      "legal.developers.title": "API & developers",
+      "legal.developers.body":
+        "The HTTP API is documented via OpenAPI (see repository lib/api-spec/openapi.yaml). Authenticated requests use a Supabase JWT bearer token.\n\nFor integration details, see docs/FRONTEND_PARTNER.md in the TrustLeader monorepo."
     }
   }
 };

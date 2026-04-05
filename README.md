@@ -35,6 +35,16 @@ pnpm --filter @workspace/trustleader dev
 
 Vite proxies `/api` to the Go server in development (see `artifacts/trustleader/vite.config.ts`). Copy `artifacts/trustleader/.env.example` to `.env` and set `VITE_SUPABASE_*` and optional `VITE_API_URL`.
 
+## Deployment (API)
+
+Build the Go binary in CI or locally (`go build -o bin/api ./cmd/api` from `backend/`). For containers, from the repository root:
+
+```bash
+docker build -f backend/Dockerfile -t trustleader-api .
+```
+
+Run with at least `PORT` (default `8080`), `DATABASE_URL` (Supabase **pooler** URI recommended), `SUPABASE_JWT_SECRET`, and `CORS_ORIGINS` for your web origin. See `backend/.env.example`.
+
 ## Layout
 
 | Path | Purpose |
@@ -45,6 +55,7 @@ Vite proxies `/api` to the Go server in development (see `artifacts/trustleader/
 | `lib/db` | Drizzle schema (reference for SQL migrations) |
 | `backend/` | Production Go API (Chi, pgx, JWT, rate limits) |
 | `supabase/migrations` | Postgres schema + RLS |
+| `docs/FRONTEND_PARTNER.md` | Frontend/API integration (env, routes, auth) for partner teams |
 
 The legacy Node `artifacts/api-server` was removed from the pnpm workspace in favor of the Go service; historical Express sources can be recovered from git history if needed.
 

@@ -2,10 +2,11 @@ import {
   useGetCompanyBusiness,
   useGetCompanyReviews,
   useRespondToReview,
+  useClaimCompanyBusiness,
   useGetConsumerReviews,
   useGetResellerStats,
   useGetResellerReferrals,
-  type GetCompanyReviewsParams,
+  ApiError,
   type GetConsumerReviewsParams,
   type GetResellerReferralsParams
 } from '@workspace/api-client-react';
@@ -21,13 +22,22 @@ export function useCompanyDashboard() {
 
   const businessQuery = useGetCompanyBusiness({
     request: { headers },
-    query: { queryKey: ['company-business'] }
+    query: {
+      queryKey: ['company-business'],
+      retry: (_c, err) => !(err instanceof ApiError && err.status === 404),
+    },
   });
 
-  const reviewsQuery = (params: GetCompanyReviewsParams) => useGetCompanyReviews(params, {
-    request: { headers },
-    query: { queryKey: ['company-reviews', params] }
-  });
+  const reviewsQuery = useGetCompanyReviews(
+    {},
+    {
+      request: { headers },
+      query: {
+        queryKey: ['company-reviews', 'list'],
+        enabled: !!businessQuery.data,
+      },
+    },
+  );
 
   const respondMutation = useRespondToReview({
     request: { headers },
@@ -39,7 +49,21 @@ export function useCompanyDashboard() {
     }
   });
 
-  return { businessQuery, reviewsQuery, respondMutation };
+  const claimMutation = useClaimCompanyBusiness({
+    request: { headers },
+    mutation: {
+      onSuccess: () => {
+        toast({ title: "Business linked to your account." });
+        queryClient.invalidateQueries({ queryKey: ['company-business'] });
+        queryClient.invalidateQueries({ queryKey: ['company-reviews'] });
+      },
+      onError: (err: Error) => {
+        toast({ title: "Could not claim business", description: err.message, variant: "destructive" });
+      }
+    }
+  });
+
+  return { businessQuery, reviewsQuery, respondMutation, claimMutation };
 }
 
 export function useConsumerDashboard(params: GetConsumerReviewsParams) {

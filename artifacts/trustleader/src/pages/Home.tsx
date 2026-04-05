@@ -6,34 +6,12 @@ import { useBusinessesQuery } from "@/hooks/use-businesses";
 import { useRecentReviewsQuery } from "@/hooks/use-recent-reviews";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Search,
-  Loader2,
-  ChevronRight,
-  Building2,
-  Plane,
-  Car,
-  Bed,
-  Gem,
-  Shirt,
-  Laptop,
-  Dumbbell,
-} from "lucide-react";
+import { Search, Loader2, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { FaApple, FaFacebookF, FaGoogle } from "react-icons/fa";
-
-const CATEGORY_LINKS: { icon: typeof Building2; labelKey: string; href: string }[] = [
-  { icon: Building2, labelKey: "home.cat.bank", href: "/search?q=bank" },
-  { icon: Plane, labelKey: "home.cat.travel", href: "/search?q=travel" },
-  { icon: Car, labelKey: "home.cat.car", href: "/search?q=car" },
-  { icon: Bed, labelKey: "home.cat.furniture", href: "/search?q=furniture" },
-  { icon: Gem, labelKey: "home.cat.jewelry", href: "/search?q=jewelry" },
-  { icon: Shirt, labelKey: "home.cat.clothing", href: "/search?q=clothing" },
-  { icon: Laptop, labelKey: "home.cat.tech", href: "/search?q=technology" },
-  { icon: Dumbbell, labelKey: "home.cat.fitness", href: "/search?q=fitness" },
-];
+import { HOME_CATEGORY_LINKS } from "@/config/categories";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -66,8 +44,8 @@ export default function Home() {
 
       <section className="relative overflow-hidden tl-hero-bg text-neutral-900">
         <div className="absolute inset-0 pointer-events-none tl-hero-gradient" aria-hidden />
-        <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-yellow-300/35 blur-3xl" />
-        <div className="pointer-events-none absolute -top-16 -right-20 h-80 w-80 rounded-full bg-emerald-400/25 blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -top-16 -right-20 h-80 w-80 rounded-full bg-sky-300/30 blur-3xl" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="max-w-3xl mx-auto text-center">
             <motion.h1
@@ -119,7 +97,7 @@ export default function Home() {
                 className="mt-8 flex justify-center px-2"
               >
                 <Link href="/write-review/b0000001-0000-4000-8000-000000000001">
-                  <span className="inline-flex rounded-full bg-gradient-to-r from-sky-200/90 via-emerald-100/95 to-amber-100/90 p-[1px] shadow-sm ring-1 ring-white/40">
+                  <span className="inline-flex rounded-full bg-gradient-to-r from-sky-200/90 via-slate-100/95 to-amber-100/90 p-[1px] shadow-sm ring-1 ring-white/40">
                     <Button
                       variant="ghost"
                       className="h-auto rounded-full border-0 bg-white/75 px-4 py-2 sm:px-5 sm:py-2.5 text-sm font-semibold text-blue-800 shadow-none backdrop-blur-[2px] hover:bg-white/90 hover:text-blue-900"
@@ -170,7 +148,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:thin]">
-              {CATEGORY_LINKS.map(({ icon: Icon, labelKey, href }) => (
+              {HOME_CATEGORY_LINKS.map(({ icon: Icon, labelKey, href }) => (
                 <Link
                   key={href}
                   href={href}
@@ -187,7 +165,7 @@ export default function Home() {
 
       {showDiscovery ? (
         <section className="py-10 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto rounded-[2rem] bg-gradient-to-br from-pink-100 via-rose-50 to-pink-50 border border-pink-200/80 px-6 py-10 sm:px-10 sm:py-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="max-w-7xl mx-auto rounded-[2rem] bg-gradient-to-br from-rose-50/95 via-neutral-50 to-amber-50/40 border border-rose-100/90 px-6 py-10 sm:px-10 sm:py-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <p className="font-sans text-lg sm:text-xl font-medium text-neutral-900 max-w-2xl">
               {t("home.promo.title")}
             </p>
@@ -211,7 +189,7 @@ export default function Home() {
             </div>
             {isLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="w-10 h-10 text-[hsl(var(--brand-forest))] animate-spin" />
+                <Loader2 className="w-10 h-10 text-neutral-500 animate-spin" />
               </div>
             ) : data?.businesses?.length ? (
               <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:thin]">
@@ -295,7 +273,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-3 lg:gap-4">
-                <div className="aspect-[3/4] rounded-2xl bg-gradient-to-b from-emerald-100 to-sky-100 border border-white shadow-inner" />
+                <div className="aspect-[3/4] rounded-2xl bg-gradient-to-b from-sky-100 to-slate-100 border border-white shadow-inner" />
                 <div className="aspect-[3/4] rounded-2xl bg-gradient-to-b from-rose-100 to-amber-50 border border-white shadow-inner mt-6" />
                 <div className="aspect-[3/4] rounded-2xl bg-gradient-to-b from-violet-100 to-neutral-100 border border-white shadow-inner" />
               </div>
@@ -306,15 +284,20 @@ export default function Home() {
 
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="font-sans text-3xl font-bold text-[hsl(var(--brand-forest))]">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+            <h2 className="font-sans text-3xl font-bold text-neutral-900">
               {submittedSearch ? t("home.featured.resultsFor", { q: submittedSearch }) : t("home.featured")}
             </h2>
+            <Link href="/search">
+              <Button variant="outline" className="rounded-full border-neutral-300 text-neutral-900 w-fit">
+                {t("home.categories.seemore")}
+              </Button>
+            </Link>
           </div>
 
           {isLoading ? (
             <div className="flex justify-center py-20">
-              <Loader2 className="w-10 h-10 text-[hsl(var(--brand-forest))] animate-spin" />
+              <Loader2 className="w-10 h-10 text-neutral-500 animate-spin" />
             </div>
           ) : data?.businesses?.length ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -344,13 +327,20 @@ export default function Home() {
       <section className="py-16 bg-white border-t border-neutral-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
-            <h2 className="font-sans text-3xl font-bold text-neutral-900">{t("home.recent.title")}</h2>
-            <p className="text-sm text-neutral-500">{t("home.recent.hint")}</p>
+            <div>
+              <h2 className="font-sans text-3xl font-bold text-neutral-900">{t("home.recent.title")}</h2>
+              <p className="text-sm text-neutral-500 mt-1">{t("home.recent.hint")}</p>
+            </div>
+            <Link href="/search">
+              <Button variant="outline" className="rounded-full border-neutral-300 text-neutral-900 w-fit shrink-0">
+                {t("home.categories.seemore")}
+              </Button>
+            </Link>
           </div>
 
           {recentQ.isLoading ? (
             <div className="flex justify-center py-16">
-              <Loader2 className="w-10 h-10 text-[hsl(var(--brand-forest))] animate-spin" />
+              <Loader2 className="w-10 h-10 text-neutral-500 animate-spin" />
             </div>
           ) : recentQ.data?.reviews?.length ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

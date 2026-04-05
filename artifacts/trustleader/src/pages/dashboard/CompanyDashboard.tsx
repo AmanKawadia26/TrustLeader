@@ -4,16 +4,25 @@ import { useCompanyDashboard } from "@/hooks/use-dashboard";
 import { TrafficLightBadge } from "@/components/TrafficLightBadge";
 import { StarRating } from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { Loader2, MessageSquareReply, Building } from "lucide-react";
-import type { Review } from "@workspace/api-client-react";
+import { ApiError, type Review } from "@workspace/api-client-react";
+import { useTranslation } from "react-i18next";
 
 export default function CompanyDashboard() {
-  const { businessQuery, reviewsQuery, respondMutation } = useCompanyDashboard();
-  const { data: business, isLoading: businessLoading } = businessQuery;
-  const { data: reviewsData, isLoading: reviewsLoading } = reviewsQuery({});
+  const { t } = useTranslation();
+  const { businessQuery, reviewsQuery, respondMutation, claimMutation } = useCompanyDashboard();
+  const { data: business, isLoading: businessLoading, isError: businessError, error: businessErr } = businessQuery;
+  const { data: reviewsData, isLoading: reviewsLoading } = reviewsQuery;
+  const [claimBusinessId, setClaimBusinessId] = useState("");
+  const needsClaim =
+    !businessLoading &&
+    businessError &&
+    businessErr instanceof ApiError &&
+    businessErr.status === 404;
 
   const [respondingTo, setRespondTo] = useState<Review | null>(null);
   const [responseText, setResponseText] = useState("");
@@ -46,6 +55,34 @@ export default function CompanyDashboard() {
           
           {businessLoading ? (
             <Loader2 className="w-6 h-6 animate-spin" />
+          ) : needsClaim ? (
+            <div className="bg-card border rounded-2xl p-6 shadow-sm max-w-xl space-y-4">
+              <p className="text-muted-foreground">{t("dash.company.claimIntro")}</p>
+              <form
+                className="flex flex-col sm:flex-row gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const id = claimBusinessId.trim();
+                  if (!id) return;
+                  claimMutation.mutate({ data: { business_id: id } });
+                }}
+              >
+                <Input
+                  placeholder={t("dash.company.claimPlaceholder")}
+                  value={claimBusinessId}
+                  onChange={(e) => setClaimBusinessId(e.target.value)}
+                  className="flex-1"
+                />
+                <Button type="submit" disabled={claimMutation.isPending || !claimBusinessId.trim()}>
+                  {claimMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dash.company.claimSubmit")}
+                </Button>
+              </form>
+              <p className="text-xs text-muted-foreground">{t("dash.company.claimHint")}</p>
+            </div>
+          ) : businessError && !needsClaim ? (
+            <p className="text-destructive text-sm">
+              {businessErr instanceof Error ? businessErr.message : t("dash.company.loadError")}
+            </p>
           ) : business ? (
             <div className="bg-card border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
@@ -60,7 +97,7 @@ export default function CompanyDashboard() {
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-1">Rating</p>
                   <div className="flex items-center gap-1 font-semibold text-lg">
-                    {business.average_rating?.toFixed(1) || '0.0'}
+                    {business.average_rating?.toFixed(1) || "0.0"}
                     <StarRating rating={1} max={1} size="sm" />
                   </div>
                 </div>
@@ -71,9 +108,13 @@ export default function CompanyDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h3 className="text-2xl font-bold mb-6">Recent Reviews</h3>
-        
-        {reviewsLoading ? (
+        <h3 className="text-2xl font-bold mb-6">{t("dash.company.recentReviews")}</h3>
+
+        {needsClaim ? (
+          <p className="text-muted-foreground">{t("dash.company.reviewsAfterClaim")}</p>
+        ) : businessError && !business && !needsClaim ? (
+          <p className="text-muted-foreground">{t("dash.company.reviewsUnavailable")}</p>
+        ) : reviewsLoading ? (
           <Loader2 className="w-8 h-8 animate-spin" />
         ) : reviewsData?.reviews?.length ? (
           <div className="space-y-4">

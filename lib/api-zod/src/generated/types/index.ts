@@ -8,6 +8,7 @@
 
 export * from "./business";
 export * from "./businessListResponse";
+export * from "./claimBusinessRequest";
 export * from "./createReviewRequest";
 export * from "./errorResponse";
 export * from "./getBusinessReviewsParams";

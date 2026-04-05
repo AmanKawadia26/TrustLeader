@@ -33,3 +33,9 @@ psql "$DATABASE_URL" -f supabase/seed.sql
 ```
 
 Do not commit database passwords. Use the Supabase dashboard **SQL Editor** for one-off runs if preferred.
+
+## Troubleshooting connections
+
+- **IPv6 unreachable / `network is unreachable` on port 5432:** The direct host `db.<project>.supabase.co` often has only **AAAA** in DNS. Use the **Connection pooling** URI (transaction mode, port **6543**) from the Supabase dashboard, or fix IPv6 routing. See `backend/.env.example`.
+- **DNS preference:** The Go API sets IPv4-first lookup by default (`backend/internal/dbconn`). Set `DATABASE_PREFER_IPV4=false` only if you need stock pgx behavior.
+- **Rotate secrets** if the database password or JWT was exposed in chat or logs.
