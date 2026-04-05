@@ -1,0 +1,21 @@
+# Render Blueprint: Go API from backend/Dockerfile (repo root = Docker context).
+# Apply: Dashboard → New → Blueprint → connect this repo, or `render blueprint apply`.
+# Set secret env vars in the dashboard (DATABASE_URL, SUPABASE_JWT_SECRET, etc.).
+
+services:
+  - type: web
+    name: trustleader-api
+    runtime: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: SUPABASE_JWT_ISSUER
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

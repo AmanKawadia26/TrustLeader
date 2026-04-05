@@ -45,6 +45,10 @@ docker build -f backend/Dockerfile -t trustleader-api .
 
 Run with at least `PORT` (default `8080`), `DATABASE_URL` (Supabase **pooler** URI recommended), `SUPABASE_JWT_SECRET`, and `CORS_ORIGINS` for your web origin. See `backend/.env.example`.
 
+### Frontend (Vercel) + API (Render)
+
+The SPA is configured for **Vercel** (`vercel.json` at repo root); the Go API fits **Render** (or any Docker host), not Vercel serverless. Step-by-step env vars and order of operations: [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Layout
 
 | Path | Purpose |
