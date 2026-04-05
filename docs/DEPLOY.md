@@ -26,15 +26,27 @@
 
 ## 2. Deploy the frontend on Vercel
 
-Use the **repository root** as the Vercel project root (do **not** set Root Directory to `artifacts/trustleader` for this setup). The only config file is [vercel.json](../vercel.json) at the repo root; it points the output to **`artifacts/trustleader/dist`** where Vite writes the production bundle.
+Pick **one** layout (both are supported):
 
-1. **New Project** → Import the GitHub repo `TrustLeader`.
-2. **Root Directory:** leave **empty** (default = monorepo root). This is required so `outputDirectory` resolves correctly.
-3. **Settings → General → Build & Output:**
-   - **Output Directory:** leave **empty** so [vercel.json](../vercel.json) is used, **or** set explicitly to **`artifacts/trustleader/dist`**.
-   - Do **not** set Output Directory to **`dist`** or **`public`** alone: from the repo root, that makes Vercel look for `./dist` or `./public` at the top level, but the Vite app builds to **`artifacts/trustleader/dist`**.
-4. **Framework Preset:** Other (or Vite); `vercel.json` supplies install/build/output.
-5. **Environment variables** (Production + Preview as needed):
+### Option A — Repository root (best if Vercel allows an empty Root Directory)
+
+1. Import repo `AmanKawadia26/TrustLeader`, branch `main`.
+2. **Root Directory:** leave **empty**.
+3. [vercel.json](../vercel.json) at the repo root runs `pnpm --filter @workspace/trustleader build` and sets **output** to **`artifacts/trustleader/dist`**.
+4. **Output Directory** in the dashboard: **empty** or **`artifacts/trustleader/dist`**. Do **not** use bare **`dist`** at repo root (there is no top-level `dist/`).
+
+### Option B — Root Directory required (subfolder only)
+
+If the UI forces a folder (no empty root), set:
+
+1. **Root Directory:** **`artifacts/trustleader`** (the main app — **not** `artifacts/mockup-sandbox`).
+2. [artifacts/trustleader/vercel.json](../artifacts/trustleader/vercel.json) runs install/build from the monorepo root (`cd ../.. && pnpm …`) and sets **output** to **`dist`** (i.e. `artifacts/trustleader/dist` on disk).
+3. **Output Directory** in the dashboard: **empty** or **`dist`**. Do **not** use **`public`**.
+
+Then continue:
+
+1. **Framework Preset:** Vite or Other.
+2. **Environment variables** (Production + Preview as needed):
 
    | Name | Example | Purpose |
    |------|---------|---------|
@@ -44,9 +56,9 @@ Use the **repository root** as the Vercel project root (do **not** set Root Dire
 
    Without `VITE_API_URL`, the app falls back to `window.location.origin`, so the browser would call your **Vercel** domain for `/api/...`, where no API exists.
 
-6. Deploy. Then update **Render** `CORS_ORIGINS` to include your Vercel URL and redeploy the API if CORS was blocking.
+3. Deploy. Then update **Render** `CORS_ORIGINS` to include your Vercel URL and redeploy the API if CORS was blocking.
 
-If you see **“No Output Directory named … found”** after a successful `vite build`, the Dashboard Output Directory almost always conflicts with the monorepo layout—clear it or set **`artifacts/trustleader/dist`** exactly.
+If you see **“No Output Directory named … found”** after a successful `vite build`, clear **Output Directory** in project settings or match the path for your option: **`artifacts/trustleader/dist`** (Option A) or **`dist`** (Option B).
 
 ## 3. Cursor MCP (Vercel / Render)
 
