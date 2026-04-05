@@ -33,6 +33,8 @@ func Load() Config {
 		origins = strings.Split(o, ",")
 		for i := range origins {
 			origins[i] = strings.TrimSpace(origins[i])
+			// Browsers never send a trailing slash on Origin; strip so pasted URLs still match.
+			origins[i] = strings.TrimSuffix(origins[i], "/")
 		}
 	}
 	ri := time.Hour
