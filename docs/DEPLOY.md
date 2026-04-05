@@ -27,9 +27,10 @@
 ## 2. Deploy the frontend on Vercel
 
 1. **New Project** → Import the same GitHub repo.
-2. **Root Directory:** leave as **repository root** (monorepo). [vercel.json](../vercel.json) sets install/build/output.
-3. **Framework Preset:** Other / Vite is fine; `vercel.json` overrides build output.
-4. **Environment variables** (Production + Preview as needed):
+2. **Root Directory:** set to **`artifacts/trustleader`** (recommended) so Vite’s output is `dist/public` and [artifacts/trustleader/vercel.json](../artifacts/trustleader/vercel.json) applies. If you leave the repo root as the project root instead, use the root [vercel.json](../vercel.json) and set **Output Directory** to `artifacts/trustleader/dist/public` in the dashboard if needed.
+3. In **Settings → General**, clear any **Output Directory** override of `public` (Vercel’s default). The build must publish **`dist/public`**, not a top-level `public` folder.
+4. **Framework Preset:** Other / Vite is fine; `vercel.json` overrides build output.
+5. **Environment variables** (Production + Preview as needed):
 
    | Name | Example | Purpose |
    |------|---------|---------|
@@ -39,7 +40,7 @@
 
    Without `VITE_API_URL`, the app falls back to `window.location.origin`, so the browser would call your **Vercel** domain for `/api/...`, where no API exists.
 
-5. Deploy. Then update **Render** `CORS_ORIGINS` to include your Vercel URL and redeploy the API if CORS was blocking.
+6. Deploy. Then update **Render** `CORS_ORIGINS` to include your Vercel URL and redeploy the API if CORS was blocking.
 
 ## 3. Cursor MCP (Vercel / Render)
 
