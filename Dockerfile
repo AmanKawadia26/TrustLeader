@@ -1,12 +1,12 @@
-# TrustLeader API — build context must be the `backend/` directory.
-#   cd backend && docker build -t trustleader-api .
-# Render: set Root Directory to `backend` and Dockerfile path to `Dockerfile`.
+# TrustLeader API — build from repository root (full clone context).
+#   docker build -t trustleader-api .
+# Render: leave Root Directory empty; set Dockerfile path to `Dockerfile`.
 
 FROM golang:1.22-alpine AS build
 WORKDIR /src
-COPY go.mod go.sum ./
+COPY backend/go.mod backend/go.sum ./
 RUN go mod download
-COPY . .
+COPY backend/ ./
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/api
 
 FROM alpine:3.20

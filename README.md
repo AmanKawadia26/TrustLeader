@@ -40,8 +40,10 @@ Vite proxies `/api` to the Go server in development (see `artifacts/trustleader/
 Build the Go binary in CI or locally (`go build -o bin/api ./cmd/api` from `backend/`). For containers, from the repository root:
 
 ```bash
-docker build -f backend/Dockerfile -t trustleader-api .
+docker build -f Dockerfile -t trustleader-api .
 ```
+
+(From `backend/` only: `docker build -t trustleader-api .` using [backend/Dockerfile](backend/Dockerfile).)
 
 Run with at least `PORT` (default `8080`), `DATABASE_URL` (Supabase **pooler** URI recommended), `SUPABASE_JWT_SECRET`, and `CORS_ORIGINS` for your web origin. See `backend/.env.example`.
 
