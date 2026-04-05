@@ -44,7 +44,7 @@ export default defineConfig({
     legalComments: "none",
   },
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
     sourcemap: false,
     // Main chunk (~580kB) includes React + router + charts; acceptable for MVP; silences Rollup noise on Vercel.

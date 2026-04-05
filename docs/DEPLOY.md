@@ -27,8 +27,8 @@
 ## 2. Deploy the frontend on Vercel
 
 1. **New Project** → Import the same GitHub repo.
-2. **Root Directory:** set to **`artifacts/trustleader`** (recommended) so Vite’s output is `dist/public` and [artifacts/trustleader/vercel.json](../artifacts/trustleader/vercel.json) applies. If you leave the repo root as the project root instead, use the root [vercel.json](../vercel.json) and set **Output Directory** to `artifacts/trustleader/dist/public` in the dashboard if needed.
-3. In **Settings → General**, clear any **Output Directory** override of `public` (Vercel’s default). The build must publish **`dist/public`**, not a top-level `public` folder.
+2. **Root Directory:** set to **`artifacts/trustleader`** (recommended) so Vite writes to **`dist/`** and [artifacts/trustleader/vercel.json](../artifacts/trustleader/vercel.json) applies. If the project root is the **repository root** instead, use the root [vercel.json](../vercel.json) (`artifacts/trustleader/dist`).
+3. In **Settings → General → Output Directory**, use **`dist`** (or leave blank so `vercel.json` applies). Do **not** leave **`public`**—that is a Vercel default and does not match this Vite app (build output is **`dist`**, not **`public`**).
 4. **Framework Preset:** Other / Vite is fine; `vercel.json` overrides build output.
 5. **Environment variables** (Production + Preview as needed):
 

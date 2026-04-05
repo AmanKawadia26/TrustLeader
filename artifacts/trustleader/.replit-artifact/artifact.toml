@@ -19,7 +19,7 @@ run = "pnpm --filter @workspace/trustleader run dev"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/trustleader", "run", "build" ]
-publicDir = "artifacts/trustleader/dist/public"
+publicDir = "artifacts/trustleader/dist"
 serve = "static"
 
 [[services.production.rewrites]]

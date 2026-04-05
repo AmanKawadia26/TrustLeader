@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @workspace/trustleader run build",
-  "outputDirectory": "artifacts/trustleader/dist/public",
+  "outputDirectory": "artifacts/trustleader/dist",
   "framework": null,
   "rewrites": [
     {
