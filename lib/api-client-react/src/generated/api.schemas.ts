@@ -42,6 +42,18 @@ export interface InsuranceCompanySummary {
   terms_url?: string | null;
 }
 
+/** Aggregates from partner businesses and approved reviews (no claim-level data). */
+export interface InsuranceCompanyStats {
+  partner_businesses: number;
+  total_reviews: number;
+  average_rating?: number | null;
+}
+
+export interface InsuranceCompanyDetailResponse {
+  insurance: InsuranceCompanySummary;
+  stats: InsuranceCompanyStats;
+}
+
 export type ListingSource = (typeof ListingSource)[keyof typeof ListingSource];
 
 export const ListingSource = {
@@ -236,6 +248,11 @@ export type ListBusinessesParams = {
    * Search query (name or domain)
    */
   q?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type ListInsuranceCompanyBusinessesParams = {
   page?: number;
   limit?: number;
 };

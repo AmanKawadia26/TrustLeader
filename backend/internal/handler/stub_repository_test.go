@@ -13,8 +13,9 @@ type stubRepo struct {
 	listBusinesses          func(ctx context.Context, q string, page, limit int) ([]store.Business, int, error)
 	getBusiness             func(ctx context.Context, id string) (*store.Business, error)
 	listBusinessReviewsPublic func(ctx context.Context, businessID string, page, limit int) ([]store.Review, int, error)
-	businessExists          func(ctx context.Context, id string) (bool, error)
-	insertReview            func(ctx context.Context, businessID, userID string, rating int, text string) (*store.Review, error)
+	businessExists                  func(ctx context.Context, id string) (bool, error)
+	getBusinessOwnerForNotification func(ctx context.Context, businessID string) (ownerID, email, businessName string, ok bool, err error)
+	insertReview                    func(ctx context.Context, businessID, userID string, rating int, text string) (*store.Review, error)
 	getReviewOwned          func(ctx context.Context, reviewID, userID string) (*store.Review, error)
 	updateReview            func(ctx context.Context, reviewID string, rating int, text string) (*store.Review, error)
 	getUser                 func(ctx context.Context, id string) (*store.User, error)
@@ -29,6 +30,9 @@ type stubRepo struct {
 	adminListReviews        func(ctx context.Context, status *string, businessID *string, page, limit int) ([]store.Review, int, error)
 	adminSetReviewStatus    func(ctx context.Context, reviewID, status string) (*store.Review, error)
 	updateBusinessOwned     func(ctx context.Context, userID string, name *string, description *string) (*store.Business, error)
+	getInsuranceCompanyBySlug        func(ctx context.Context, slug string) (*store.InsuranceCompany, error)
+	getInsuranceCompanyStats         func(ctx context.Context, insuranceCompanyID string) (store.InsuranceCompanyStats, error)
+	listBusinessesByInsuranceCompanyID func(ctx context.Context, insuranceCompanyID string, page, limit int) ([]store.Business, int, error)
 	pgxPool                 func() *pgxpool.Pool
 }
 
@@ -58,6 +62,13 @@ func (s *stubRepo) BusinessExists(ctx context.Context, id string) (bool, error) 
 		return s.businessExists(ctx, id)
 	}
 	return false, nil
+}
+
+func (s *stubRepo) GetBusinessOwnerForNotification(ctx context.Context, businessID string) (string, string, string, bool, error) {
+	if s.getBusinessOwnerForNotification != nil {
+		return s.getBusinessOwnerForNotification(ctx, businessID)
+	}
+	return "", "", "", false, nil
 }
 
 func (s *stubRepo) InsertReview(ctx context.Context, businessID, userID string, rating int, text string) (*store.Review, error) {
@@ -163,6 +174,27 @@ func (s *stubRepo) UpdateBusinessOwned(ctx context.Context, userID string, name 
 		return s.updateBusinessOwned(ctx, userID, name, description)
 	}
 	return nil, errors.New("stub: UpdateBusinessOwned not configured")
+}
+
+func (s *stubRepo) GetInsuranceCompanyBySlug(ctx context.Context, slug string) (*store.InsuranceCompany, error) {
+	if s.getInsuranceCompanyBySlug != nil {
+		return s.getInsuranceCompanyBySlug(ctx, slug)
+	}
+	return nil, nil
+}
+
+func (s *stubRepo) GetInsuranceCompanyStats(ctx context.Context, insuranceCompanyID string) (store.InsuranceCompanyStats, error) {
+	if s.getInsuranceCompanyStats != nil {
+		return s.getInsuranceCompanyStats(ctx, insuranceCompanyID)
+	}
+	return store.InsuranceCompanyStats{}, nil
+}
+
+func (s *stubRepo) ListBusinessesByInsuranceCompanyID(ctx context.Context, insuranceCompanyID string, page, limit int) ([]store.Business, int, error) {
+	if s.listBusinessesByInsuranceCompanyID != nil {
+		return s.listBusinessesByInsuranceCompanyID(ctx, insuranceCompanyID, page, limit)
+	}
+	return nil, 0, nil
 }
 
 func (s *stubRepo) PgxPool() *pgxpool.Pool {

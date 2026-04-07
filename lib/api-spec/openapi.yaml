@@ -17,6 +17,8 @@ tags:
     description: Dashboard operations
   - name: auth
     description: Auth operations
+  - name: insurance-companies
+    description: Public insurance company profiles and partner listings
 
 paths:
   /healthz:
@@ -100,6 +102,69 @@ paths:
                 $ref: "#/components/schemas/Business"
         "404":
           description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /insurance-companies/{slug}:
+    get:
+      operationId: getInsuranceCompany
+      tags: [insurance-companies]
+      summary: Get insurance company by slug with aggregate stats
+      description: |
+        Stats are derived from active partner businesses (insurance_proof, active listing) and approved reviews.
+        Insurance claim outcomes are not stored; successful-claims counts are not included.
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Insurer profile and stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InsuranceCompanyDetailResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /insurance-companies/{slug}/businesses:
+    get:
+      operationId: listInsuranceCompanyBusinesses
+      tags: [insurance-companies]
+      summary: List partner businesses for an insurance company
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated businesses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessListResponse"
+        "404":
+          description: Insurance company not found
           content:
             application/json:
               schema:
@@ -704,6 +769,36 @@ components:
         - id
         - name
         - slug
+
+    InsuranceCompanyStats:
+      type: object
+      description: Aggregates from partner businesses and approved reviews (no claim-level data).
+      properties:
+        partner_businesses:
+          type: integer
+          description: Businesses with this insurer, insurance_proof true, and active listing
+        total_reviews:
+          type: integer
+          description: Count of approved reviews across those businesses
+        average_rating:
+          type: number
+          format: double
+          nullable: true
+          description: Mean rating over approved reviews (null if none)
+      required:
+        - partner_businesses
+        - total_reviews
+
+    InsuranceCompanyDetailResponse:
+      type: object
+      properties:
+        insurance:
+          $ref: "#/components/schemas/InsuranceCompanySummary"
+        stats:
+          $ref: "#/components/schemas/InsuranceCompanyStats"
+      required:
+        - insurance
+        - stats
 
     ListingSource:
       type: string

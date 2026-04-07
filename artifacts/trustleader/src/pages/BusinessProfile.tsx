@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 export default function BusinessProfile() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
-  
+
   const { data: business, isLoading: businessLoading, error } = useBusinessQuery(id);
   const { data: reviewsData, isLoading: reviewsLoading } = useBusinessReviewsQuery(id, { limit: 20 });
 
@@ -29,8 +29,8 @@ export default function BusinessProfile() {
     <Layout>
       <div className="bg-[hsl(var(--brand-cream))] border-b border-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-          <div className="flex flex-col md:flex-row gap-8 items-start justify-between">
-            <div className="flex-1">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-3 mb-4">
                 <TrafficLightBadge status={business.traffic_light} size="lg" />
                 <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground rounded-full border px-3 py-1 bg-background/80">
@@ -41,25 +41,25 @@ export default function BusinessProfile() {
               <a href={`https://${business.domain}`} target="_blank" rel="noreferrer" className="inline-flex items-center text-lg text-primary hover:underline mb-6">
                 {business.domain} <ExternalLink className="w-4 h-4 ml-1.5" />
               </a>
-              
-              <div className="flex items-center gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm inline-flex border border-border/50">
-                <div className="flex flex-col">
-                  <span className="text-3xl font-bold">{business.average_rating?.toFixed(1) || '0.0'}</span>
+            </div>
+
+            <div className="w-full lg:w-auto shrink-0 flex flex-col gap-4 items-stretch lg:items-end">
+              <div className="flex items-center gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-border/50 w-full lg:w-auto justify-center lg:justify-end">
+                <div className="flex flex-col items-center lg:items-end">
+                  <span className="text-3xl font-bold">{business.average_rating?.toFixed(1) || "0.0"}</span>
                   <StarRating rating={business.average_rating || 0} size="sm" />
                 </div>
-                <div className="w-px h-10 bg-border mx-2"></div>
-                <div className="flex flex-col">
+                <div className="w-px h-10 bg-border mx-2" />
+                <div className="flex flex-col items-center lg:items-end">
                   <span className="text-3xl font-bold">{business.review_count}</span>
                   <span className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Reviews</span>
                 </div>
               </div>
-            </div>
 
-            <div className="w-full md:w-auto shrink-0 flex flex-col gap-4">
-              <Link href={`/write-review/${business.id}`}>
-                <Button size="lg" className="w-full md:w-auto text-lg h-14 rounded-xl shadow-lg shadow-primary/25 hover:-translate-y-0.5 transition-transform">
+              <Link href={`/write-review/${business.id}`} className="w-full lg:w-auto">
+                <Button size="lg" className="w-full lg:w-auto text-lg h-14 rounded-xl shadow-lg shadow-primary/25 hover:-translate-y-0.5 transition-transform">
                   <PenLine className="w-5 h-5 mr-2" />
-                  {t('business.writeReview')}
+                  {t("business.writeReview")}
                 </Button>
               </Link>
             </div>
@@ -74,13 +74,13 @@ export default function BusinessProfile() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold mb-8">{t('business.reviews')}</h2>
-        
+        <h2 className="text-2xl font-bold mb-8">{t("business.reviews")}</h2>
+
         {reviewsLoading ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
         ) : reviewsData?.reviews?.length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {reviewsData.reviews.map(review => (
+            {reviewsData.reviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
             ))}
           </div>

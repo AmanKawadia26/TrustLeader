@@ -1,4 +1,5 @@
 import type { InsuranceCompanySummary } from "@workspace/api-client-react";
+import { Link } from "wouter";
 import { ShieldCheck } from "lucide-react";
 
 export function InsuranceBanner({ insurance }: { insurance: InsuranceCompanySummary }) {
@@ -12,9 +13,17 @@ export function InsuranceBanner({ insurance }: { insurance: InsuranceCompanySumm
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-900 dark:text-emerald-200">
             Insurance-backed on TrustLeader
           </p>
-          <h3 className="mt-1 font-serif text-xl text-emerald-950 dark:text-emerald-50">
-            {insurance.name}
-          </h3>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <h3 className="font-serif text-xl text-emerald-950 dark:text-emerald-50">
+              {insurance.name}
+            </h3>
+            <Link
+              href={`/insurance/${insurance.slug}`}
+              className="text-sm font-medium text-emerald-800 underline underline-offset-4 hover:text-emerald-950 dark:text-emerald-200"
+            >
+              View insurer profile
+            </Link>
+          </div>
           {insurance.description ? (
             <p className="mt-2 text-sm text-emerald-900/85 dark:text-emerald-100/90">{insurance.description}</p>
           ) : null}

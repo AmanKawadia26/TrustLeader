@@ -20,6 +20,7 @@
    - `SUPABASE_JWT_SECRET` – JWT secret used to validate Supabase tokens (see [AUTH_AND_DB.md](AUTH_AND_DB.md)).
    - `SUPABASE_JWT_ISSUER` – if your deployment sets it (match `backend/.env.example`).
    - `CORS_ORIGINS` – comma-separated list of **origins allowed to call the API** (no trailing slash). After Vercel is live, include your production URL, e.g. `https://your-app.vercel.app`.
+   - **Optional — email owners on new reviews:** set `RESEND_API_KEY` and `NOTIFY_FROM_EMAIL` ([Resend](https://resend.com); verify your domain or use their test sender). Set `PUBLIC_APP_URL` to your Vercel app origin (no trailing slash) so notification emails link to `/dashboard/company`. If `RESEND_API_KEY` or `NOTIFY_FROM_EMAIL` is unset, the API does not send email.
 6. Wait for deploy; copy the public URL (e.g. `https://trustleader-api.onrender.com`).
 
 **Health check:** `GET /api/healthz` (see [render.yaml](../render.yaml) `healthCheckPath`).

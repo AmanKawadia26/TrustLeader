@@ -30,7 +30,9 @@ import type {
   GetConsumerReviewsParams,
   GetResellerReferralsParams,
   HealthStatus,
+  InsuranceCompanyDetailResponse,
   ListBusinessesParams,
+  ListInsuranceCompanyBusinessesParams,
   PatchCompanyBusinessRequest,
   ReadyStatus,
   RecentReviewsResponse,
@@ -375,6 +377,223 @@ export function useGetBusiness<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetBusinessQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get insurance company by slug with aggregate stats
+ */
+export const getGetInsuranceCompanyUrl = (slug: string) => {
+  return `/api/insurance-companies/${slug}`;
+};
+
+export const getInsuranceCompany = async (
+  slug: string,
+  options?: RequestInit,
+): Promise<InsuranceCompanyDetailResponse> => {
+  return customFetch<InsuranceCompanyDetailResponse>(
+    getGetInsuranceCompanyUrl(slug),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetInsuranceCompanyQueryKey = (slug: string) => {
+  return [`/api/insurance-companies/${slug}`] as const;
+};
+
+export const getGetInsuranceCompanyQueryOptions = <
+  TData = Awaited<ReturnType<typeof getInsuranceCompany>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getInsuranceCompany>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetInsuranceCompanyQueryKey(slug);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getInsuranceCompany>>
+  > = ({ signal }) =>
+    getInsuranceCompany(slug, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!slug,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getInsuranceCompany>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetInsuranceCompanyQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getInsuranceCompany>>
+>;
+export type GetInsuranceCompanyQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get insurance company by slug with aggregate stats
+ */
+
+export function useGetInsuranceCompany<
+  TData = Awaited<ReturnType<typeof getInsuranceCompany>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getInsuranceCompany>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetInsuranceCompanyQueryOptions(slug, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List partner businesses for an insurance company
+ */
+export const getListInsuranceCompanyBusinessesUrl = (
+  slug: string,
+  params?: ListInsuranceCompanyBusinessesParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/insurance-companies/${slug}/businesses?${stringifiedParams}`
+    : `/api/insurance-companies/${slug}/businesses`;
+};
+
+export const listInsuranceCompanyBusinesses = async (
+  slug: string,
+  params?: ListInsuranceCompanyBusinessesParams,
+  options?: RequestInit,
+): Promise<BusinessListResponse> => {
+  return customFetch<BusinessListResponse>(
+    getListInsuranceCompanyBusinessesUrl(slug, params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListInsuranceCompanyBusinessesQueryKey = (
+  slug: string,
+  params?: ListInsuranceCompanyBusinessesParams,
+) => {
+  return [
+    `/api/insurance-companies/${slug}/businesses`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getListInsuranceCompanyBusinessesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listInsuranceCompanyBusinesses>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  slug: string,
+  params?: ListInsuranceCompanyBusinessesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listInsuranceCompanyBusinesses>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getListInsuranceCompanyBusinessesQueryKey(slug, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listInsuranceCompanyBusinesses>>
+  > = ({ signal }) =>
+    listInsuranceCompanyBusinesses(slug, params, {
+      signal,
+      ...requestOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!slug,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listInsuranceCompanyBusinesses>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListInsuranceCompanyBusinessesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listInsuranceCompanyBusinesses>>
+>;
+export type ListInsuranceCompanyBusinessesQueryError =
+  ErrorType<ErrorResponse>;
+
+/**
+ * @summary List partner businesses for an insurance company
+ */
+
+export function useListInsuranceCompanyBusinesses<
+  TData = Awaited<ReturnType<typeof listInsuranceCompanyBusinesses>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  slug: string,
+  params?: ListInsuranceCompanyBusinessesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listInsuranceCompanyBusinesses>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListInsuranceCompanyBusinessesQueryOptions(
+    slug,
+    params,
+    options,
+  );
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

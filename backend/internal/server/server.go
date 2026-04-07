@@ -8,6 +8,7 @@ import (
 
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/config"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/handler"
+	"github.com/AmanKawadia26/TrustLeader/backend/internal/notify"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/recentcache"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/store"
 	"github.com/go-chi/chi/v5"
@@ -16,7 +17,7 @@ import (
 	"github.com/go-chi/httprate"
 )
 
-func New(cfg config.Config, st *store.Store, recent *recentcache.Cache) *http.Server {
+func New(cfg config.Config, st *store.Store, recent *recentcache.Cache, mail notify.Sender) *http.Server {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	r := chi.NewRouter()
@@ -48,7 +49,7 @@ func New(cfg config.Config, st *store.Store, recent *recentcache.Cache) *http.Se
 		MaxAge:           300,
 	}))
 
-	api := &handler.API{Store: st, Cfg: cfg, Recent: recent}
+	api := &handler.API{Store: st, Cfg: cfg, Recent: recent, Notify: mail}
 	r.Route("/api", func(r chi.Router) {
 		api.Routes(r)
 	})

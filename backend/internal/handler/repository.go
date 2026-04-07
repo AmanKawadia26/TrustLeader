@@ -13,6 +13,7 @@ type Repository interface {
 	GetBusiness(ctx context.Context, id string) (*store.Business, error)
 	ListBusinessReviewsPublic(ctx context.Context, businessID string, page, limit int) ([]store.Review, int, error)
 	BusinessExists(ctx context.Context, id string) (bool, error)
+	GetBusinessOwnerForNotification(ctx context.Context, businessID string) (ownerID, email, businessName string, ok bool, err error)
 	InsertReview(ctx context.Context, businessID, userID string, rating int, text string) (*store.Review, error)
 	GetReviewOwned(ctx context.Context, reviewID, userID string) (*store.Review, error)
 	UpdateReview(ctx context.Context, reviewID string, rating int, text string) (*store.Review, error)
@@ -28,5 +29,8 @@ type Repository interface {
 	AdminListReviews(ctx context.Context, status *string, businessID *string, page, limit int) ([]store.Review, int, error)
 	AdminSetReviewStatus(ctx context.Context, reviewID, status string) (*store.Review, error)
 	UpdateBusinessOwned(ctx context.Context, userID string, name *string, description *string) (*store.Business, error)
+	GetInsuranceCompanyBySlug(ctx context.Context, slug string) (*store.InsuranceCompany, error)
+	GetInsuranceCompanyStats(ctx context.Context, insuranceCompanyID string) (store.InsuranceCompanyStats, error)
+	ListBusinessesByInsuranceCompanyID(ctx context.Context, insuranceCompanyID string, page, limit int) ([]store.Business, int, error)
 	PgxPool() *pgxpool.Pool
 }

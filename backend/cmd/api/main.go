@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/config"
+	"github.com/AmanKawadia26/TrustLeader/backend/internal/notify"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/recentcache"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/server"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/store"
@@ -33,7 +34,8 @@ func main() {
 	}
 	go recent.Loop(context.Background(), cfg.RecentReviewsInterval)
 
-	srv := server.New(cfg, st, recent)
+	mail := notify.NewSender(cfg)
+	srv := server.New(cfg, st, recent, mail)
 	go func() {
 		log.Printf("api listening on %s", cfg.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

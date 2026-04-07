@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -52,21 +53,30 @@ type InsuranceCompany struct {
 	TermsURL    *string
 }
 
+// InsuranceCompanyStats aggregates public metrics for businesses linked to an insurer
+// (partner businesses with insurance_proof and active listing; reviews are approved only).
+// Claim outcomes are not stored in the database; this struct does not include claim counts.
+type InsuranceCompanyStats struct {
+	PartnerBusinesses int
+	TotalReviews      int
+	AverageRating     *float64
+}
+
 type Business struct {
-	ID               string
-	Domain           string
-	Name             string
-	Description      *string
-	TrafficLight     string
-	InsuranceProof   bool
-	ListingSource    string
-	ListingStatus    string
-	InsuranceID      *string
-	ReviewCount      int
-	AverageRating    *float32
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
-	Insurance        *InsuranceCompany
+	ID             string
+	Domain         string
+	Name           string
+	Description    *string
+	TrafficLight   string
+	InsuranceProof bool
+	ListingSource  string
+	ListingStatus  string
+	InsuranceID    *string
+	ReviewCount    int
+	AverageRating  *float32
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Insurance      *InsuranceCompany
 }
 
 type Review struct {
@@ -95,22 +105,22 @@ type RecentReviewPublic struct {
 }
 
 type User struct {
-	ID          string
-	Email       string
-	Role        string
-	BusinessID  *string
-	ResellerID  *string
-	CreatedAt   time.Time
+	ID         string
+	Email      string
+	Role       string
+	BusinessID *string
+	ResellerID *string
+	CreatedAt  time.Time
 }
 
 type Referral struct {
-	ID                string
-	BusinessID        string
-	BusinessName      string
-	BusinessDomain    string
-	Status            string
-	CommissionAmount  float32
-	CreatedAt         time.Time
+	ID               string
+	BusinessID       string
+	BusinessName     string
+	BusinessDomain   string
+	Status           string
+	CommissionAmount float32
+	CreatedAt        time.Time
 }
 
 func (s *Store) ListBusinesses(ctx context.Context, q string, page, limit int) ([]Business, int, error) {
@@ -226,6 +236,78 @@ func scanBusinessRowSingle(row pgx.Row) (Business, error) {
 	return b, nil
 }
 
+// GetInsuranceCompanyBySlug returns the insurer by slug (case-insensitive), or nil if not found.
+func (s *Store) GetInsuranceCompanyBySlug(ctx context.Context, slug string) (*InsuranceCompany, error) {
+	row := s.Pool.QueryRow(ctx, `SELECT id, name, slug, logo_url, description, terms_url FROM insurance_companies WHERE LOWER(slug) = LOWER($1)`, strings.TrimSpace(slug))
+	var ic InsuranceCompany
+	err := row.Scan(&ic.ID, &ic.Name, &ic.Slug, &ic.LogoURL, &ic.Description, &ic.TermsURL)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &ic, nil
+}
+
+// GetInsuranceCompanyStats computes partner business count, total approved reviews, and average rating
+// across businesses with this insurance_company_id, insurance_proof true, and listing_status active.
+func (s *Store) GetInsuranceCompanyStats(ctx context.Context, insuranceCompanyID string) (InsuranceCompanyStats, error) {
+	var stats InsuranceCompanyStats
+	var avg sql.NullFloat64
+	err := s.Pool.QueryRow(ctx, `
+		SELECT
+			(SELECT COUNT(*)::int FROM businesses
+			 WHERE insurance_company_id = $1 AND insurance_proof = true AND listing_status = 'active'),
+			(SELECT COUNT(*)::int FROM reviews r
+			 INNER JOIN businesses b ON b.id = r.business_id
+			 WHERE b.insurance_company_id = $1 AND b.insurance_proof = true AND b.listing_status = 'active'
+			   AND r.status = 'approved'),
+			(SELECT AVG(r.rating::float8) FROM reviews r
+			 INNER JOIN businesses b ON b.id = r.business_id
+			 WHERE b.insurance_company_id = $1 AND b.insurance_proof = true AND b.listing_status = 'active'
+			   AND r.status = 'approved')`,
+		insuranceCompanyID,
+	).Scan(&stats.PartnerBusinesses, &stats.TotalReviews, &avg)
+	if err != nil {
+		return InsuranceCompanyStats{}, err
+	}
+	if avg.Valid {
+		v := avg.Float64
+		stats.AverageRating = &v
+	}
+	return stats, nil
+}
+
+// ListBusinessesByInsuranceCompanyID lists active partner businesses (insurance_proof, active listing) for an insurer.
+func (s *Store) ListBusinessesByInsuranceCompanyID(ctx context.Context, insuranceCompanyID string, page, limit int) ([]Business, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	offset := (page - 1) * limit
+	base := `SELECT b.id, b.domain, b.name, b.description, b.traffic_light::text, b.insurance_proof,
+		b.listing_source::text, b.listing_status::text, b.insurance_company_id, b.review_count, b.average_rating, b.created_at, b.updated_at,
+		ic.id, ic.name, ic.slug, ic.logo_url, ic.description, ic.terms_url
+		FROM businesses b
+		LEFT JOIN insurance_companies ic ON ic.id = b.insurance_company_id`
+	where := ` WHERE b.insurance_company_id = $1 AND b.insurance_proof = true AND b.listing_status = 'active'`
+	order := ` ORDER BY b.review_count DESC NULLS LAST`
+	var total int
+	err := s.Pool.QueryRow(ctx, `SELECT COUNT(*) FROM businesses b`+where, insuranceCompanyID).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.Pool.Query(ctx, base+where+order+` LIMIT $2 OFFSET $3`, insuranceCompanyID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	return scanBusinesses(rows, total)
+}
+
 func (s *Store) ListBusinessReviewsPublic(ctx context.Context, businessID string, page, limit int) ([]Review, int, error) {
 	if page < 1 {
 		page = 1
@@ -328,6 +410,28 @@ func (s *Store) BusinessExists(ctx context.Context, id string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// GetBusinessOwnerForNotification returns the claimed owner's user id and email for a business, if any.
+func (s *Store) GetBusinessOwnerForNotification(ctx context.Context, businessID string) (ownerID, email, businessName string, ok bool, err error) {
+	var owner sql.NullString
+	var em sql.NullString
+	var name string
+	err = s.Pool.QueryRow(ctx, `
+		SELECT b.owner_user_id, u.email, b.name
+		FROM businesses b
+		LEFT JOIN users u ON u.id = b.owner_user_id
+		WHERE b.id = $1`, businessID).Scan(&owner, &em, &name)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", "", "", false, nil
+	}
+	if err != nil {
+		return "", "", "", false, err
+	}
+	if !owner.Valid || owner.String == "" || !em.Valid || em.String == "" {
+		return "", name, "", false, nil
+	}
+	return owner.String, em.String, name, true, nil
 }
 
 func (s *Store) InsertReview(ctx context.Context, businessID, userID string, rating int, text string) (*Review, error) {

@@ -1,16 +1,20 @@
 package handler
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/config"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/middleware"
+	"github.com/AmanKawadia26/TrustLeader/backend/internal/notify"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/recentcache"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/store"
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/trafficlight"
@@ -21,6 +25,7 @@ type API struct {
 	Store  Repository
 	Cfg    config.Config
 	Recent *recentcache.Cache
+	Notify notify.Sender
 }
 
 func (a *API) Routes(r chi.Router) {
@@ -29,6 +34,8 @@ func (a *API) Routes(r chi.Router) {
 	r.Get("/businesses", a.ListBusinesses)
 	r.Get("/businesses/{id}", a.GetBusiness)
 	r.Get("/businesses/{id}/reviews", a.GetBusinessReviews)
+	r.Get("/insurance-companies/{slug}", a.GetInsuranceCompany)
+	r.Get("/insurance-companies/{slug}/businesses", a.ListInsuranceCompanyBusinesses)
 	r.Get("/reviews/recent", a.GetRecentReviews)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.SupabaseJWT(a.Cfg.SupabaseJWTSecret, a.Cfg.SupabaseJWTIssuer))
@@ -147,14 +154,14 @@ func (a *API) GetRecentReviews(w http.ResponseWriter, r *http.Request) {
 	out := make([]map[string]interface{}, 0, len(items))
 	for _, it := range items {
 		out = append(out, map[string]interface{}{
-			"id":               it.ID,
-			"rating":           it.Rating,
-			"text":             it.Text,
-			"reviewer_label":   it.ReviewerLabel,
-			"business_id":      it.BusinessID,
-			"business_name":    it.BusinessName,
-			"business_domain":  it.BusinessDomain,
-			"created_at":       it.CreatedAt.UTC().Format(time.RFC3339Nano),
+			"id":              it.ID,
+			"rating":          it.Rating,
+			"text":            it.Text,
+			"reviewer_label":  it.ReviewerLabel,
+			"business_id":     it.BusinessID,
+			"business_name":   it.BusinessName,
+			"business_domain": it.BusinessDomain,
+			"created_at":      it.CreatedAt.UTC().Format(time.RFC3339Nano),
 		})
 	}
 	refreshed := ""
@@ -162,8 +169,8 @@ func (a *API) GetRecentReviews(w http.ResponseWriter, r *http.Request) {
 		refreshed = at.UTC().Format(time.RFC3339Nano)
 	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"reviews":       out,
-		"refreshed_at":    refreshed,
+		"reviews":      out,
+		"refreshed_at": refreshed,
 	})
 }
 
@@ -205,7 +212,51 @@ func (a *API) CreateReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	trafficlight.Recalculate(r.Context(), a.Store.PgxPool(), body.BusinessID, uid)
+	go a.notifyOwnerNewReview(uid, rev)
 	writeJSON(w, http.StatusCreated, formatReview(*rev))
+}
+
+func (a *API) notifyOwnerNewReview(reviewerID string, rev *store.Review) {
+	if rev == nil || a.Notify == nil {
+		return
+	}
+	ownerID, email, bizName, ok, err := a.Store.GetBusinessOwnerForNotification(context.Background(), rev.BusinessID)
+	if err != nil {
+		slog.Error("owner notification lookup", "err", err, "business_id", rev.BusinessID)
+		return
+	}
+	if !ok || ownerID == reviewerID {
+		return
+	}
+	dashboardURL := ""
+	if a.Cfg.PublicAppURL != "" {
+		dashboardURL = a.Cfg.PublicAppURL + "/dashboard/company"
+	}
+	excerpt := excerptReviewText(rev.Text, 280)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := a.Notify.SendReviewSubmitted(ctx, notify.ReviewSubmittedPayload{
+		ToEmail:       email,
+		BusinessName:  bizName,
+		Rating:        rev.Rating,
+		ReviewExcerpt: excerpt,
+		ReviewID:      rev.ID,
+		DashboardURL:  dashboardURL,
+	}); err != nil {
+		slog.Error("owner notification email", "err", err, "business_id", rev.BusinessID)
+	}
+}
+
+func excerptReviewText(s string, maxRunes int) string {
+	s = strings.TrimSpace(s)
+	if utf8.RuneCountInString(s) <= maxRunes {
+		return s
+	}
+	r := []rune(s)
+	if len(r) <= maxRunes {
+		return s
+	}
+	return string(r[:maxRunes]) + "..."
 }
 
 func (a *API) UpdateReview(w http.ResponseWriter, r *http.Request) {
@@ -535,25 +586,21 @@ func jwtEmail(r *http.Request) string {
 
 func formatBusiness(b store.Business) map[string]interface{} {
 	m := map[string]interface{}{
-		"id":               b.ID,
-		"domain":           b.Domain,
-		"name":             b.Name,
-		"description":      b.Description,
-		"traffic_light":    b.TrafficLight,
-		"insurance_proof":  b.InsuranceProof,
-		"listing_source":   b.ListingSource,
-		"listing_status":   b.ListingStatus,
-		"review_count":     b.ReviewCount,
-		"average_rating":   b.AverageRating,
-		"created_at":       b.CreatedAt.UTC().Format(time.RFC3339Nano),
-		"updated_at":       b.UpdatedAt.UTC().Format(time.RFC3339Nano),
+		"id":              b.ID,
+		"domain":          b.Domain,
+		"name":            b.Name,
+		"description":     b.Description,
+		"traffic_light":   b.TrafficLight,
+		"insurance_proof": b.InsuranceProof,
+		"listing_source":  b.ListingSource,
+		"listing_status":  b.ListingStatus,
+		"review_count":    b.ReviewCount,
+		"average_rating":  b.AverageRating,
+		"created_at":      b.CreatedAt.UTC().Format(time.RFC3339Nano),
+		"updated_at":      b.UpdatedAt.UTC().Format(time.RFC3339Nano),
 	}
 	if b.Insurance != nil {
-		ic := b.Insurance
-		m["insurance"] = map[string]interface{}{
-			"id": ic.ID, "name": ic.Name, "slug": ic.Slug,
-			"logo_url": ic.LogoURL, "description": ic.Description, "terms_url": ic.TermsURL,
-		}
+		m["insurance"] = formatInsuranceCompanySummary(*b.Insurance)
 	} else {
 		m["insurance"] = nil
 	}

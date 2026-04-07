@@ -10,6 +10,7 @@ import "@/lib/i18n"; // initialize i18n
 
 const Home = lazy(() => import("@/pages/Home"));
 const BusinessProfile = lazy(() => import("@/pages/BusinessProfile"));
+const InsuranceProfile = lazy(() => import("@/pages/InsuranceProfile"));
 const WriteReview = lazy(() => import("@/pages/WriteReview"));
 const About = lazy(() => import("@/pages/About"));
 const Categories = lazy(() => import("@/pages/Categories"));
@@ -65,6 +66,7 @@ function Router() {
         <Route path="/terms" component={Terms} />
         <Route path="/developers" component={Developers} />
         <Route path="/business/:id" component={BusinessProfile} />
+        <Route path="/insurance/:slug" component={InsuranceProfile} />
         
         {/* Auth routes */}
         <Route path="/auth/login" component={Login} />

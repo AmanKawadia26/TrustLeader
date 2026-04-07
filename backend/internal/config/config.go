@@ -8,13 +8,19 @@ import (
 )
 
 type Config struct {
-	Addr                    string
-	DatabaseURL             string
-	SupabaseJWTSecret       string
-	SupabaseJWTIssuer       string
-	CORSAllowedOrigins      []string
-	RateLimitPerMin         int
-	RecentReviewsInterval   time.Duration
+	Addr                  string
+	DatabaseURL           string
+	SupabaseJWTSecret     string
+	SupabaseJWTIssuer     string
+	CORSAllowedOrigins    []string
+	RateLimitPerMin       int
+	RecentReviewsInterval time.Duration
+	// NotifyFromEmail is the From address for transactional email (e.g. onboarding@resend.dev).
+	NotifyFromEmail string
+	// PublicAppURL is the browser origin for links in emails (no trailing slash).
+	PublicAppURL string
+	// ResendAPIKey enables email via Resend; empty means notify is a no-op.
+	ResendAPIKey string
 }
 
 func Load() Config {
@@ -43,6 +49,11 @@ func Load() Config {
 			ri = d
 		}
 	}
+	notifyFrom := strings.TrimSpace(os.Getenv("NOTIFY_FROM_EMAIL"))
+	publicApp := strings.TrimSpace(os.Getenv("PUBLIC_APP_URL"))
+	publicApp = strings.TrimSuffix(publicApp, "/")
+	resendKey := strings.TrimSpace(os.Getenv("RESEND_API_KEY"))
+
 	return Config{
 		Addr:                  ":" + port,
 		DatabaseURL:           os.Getenv("DATABASE_URL"),
@@ -51,5 +62,8 @@ func Load() Config {
 		CORSAllowedOrigins:    origins,
 		RateLimitPerMin:       rl,
 		RecentReviewsInterval: ri,
+		NotifyFromEmail:       notifyFrom,
+		PublicAppURL:          publicApp,
+		ResendAPIKey:          resendKey,
 	}
 }

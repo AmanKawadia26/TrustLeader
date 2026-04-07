@@ -4,16 +4,19 @@ import { TrafficLightBadge } from "./TrafficLightBadge";
 import { StarRating } from "./StarRating";
 import { ShieldCheck, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function BusinessCard({ business }: { business: Business }) {
+  const profileHref = `/business/${business.id}`;
+
   return (
-    <Link href={`/business/${business.id}`}>
-      <motion.div
-        whileHover={{ y: -4 }}
-        className="group block h-full rounded-2xl bg-gradient-to-b from-neutral-100/95 to-neutral-200/50 p-[3px] shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
-      >
-        <div className="flex h-full flex-col rounded-[calc(1rem-1px)] bg-card border border-neutral-200/80 overflow-hidden">
-          <div className="p-5 flex flex-col flex-1">
+    <motion.div
+      whileHover={{ y: -4 }}
+      className="group block h-full rounded-2xl bg-gradient-to-b from-neutral-100/95 to-neutral-200/50 p-[3px] shadow-sm hover:shadow-lg transition-all duration-300"
+    >
+      <div className="flex h-full flex-col rounded-[calc(1rem-1px)] bg-card border border-neutral-200/80 overflow-hidden">
+        <div className="p-5 flex flex-col flex-1">
+          <Link href={profileHref} className="block rounded-xl -m-1 p-1 outline-offset-2 hover:bg-muted/30 transition-colors">
             <div className="flex flex-col items-center text-center gap-3 mb-4">
               <div
                 className="h-14 w-14 shrink-0 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-sm font-bold text-neutral-600"
@@ -32,35 +35,51 @@ export function BusinessCard({ business }: { business: Business }) {
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <StarRating rating={business.average_rating || 0} size="sm" />
-              <span className="text-sm font-medium">{business.average_rating?.toFixed(1) || "0.0"}</span>
-              <span className="text-sm text-muted-foreground">({business.review_count} reviews)</span>
-            </div>
-
             <p className="text-sm text-muted-foreground line-clamp-2 mb-4 min-h-[40px] text-center sm:text-left">
               {business.description || "No description provided."}
             </p>
+          </Link>
 
-            <div className="flex items-center justify-between mt-auto pt-4 border-t border-neutral-200/80">
+          <div className="flex items-center justify-end gap-2 mb-3">
+            <StarRating rating={business.average_rating || 0} size="sm" />
+            <span className="text-sm font-medium">{business.average_rating?.toFixed(1) || "0.0"}</span>
+            <span className="text-sm text-muted-foreground">({business.review_count} reviews)</span>
+          </div>
+
+          <div className="flex items-center gap-3 mt-auto pt-4 border-t border-neutral-200/80">
+            <div className="min-w-0 flex-1">
               {business.insurance_proof && business.traffic_light === "green" && business.insurance ? (
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--brand-gold))]">
-                  <ShieldCheck className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{business.insurance.name}</span>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={`/insurance/${business.insurance.slug}`}
+                      className="flex min-w-0 max-w-full items-center gap-1.5 text-xs font-semibold text-[hsl(var(--brand-gold))] hover:underline"
+                      title={business.insurance.name}
+                    >
+                      <ShieldCheck className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{business.insurance.name}</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-sm">
+                    <p>{business.insurance.name}</p>
+                  </TooltipContent>
+                </Tooltip>
               ) : (
                 <span className="text-xs text-muted-foreground capitalize">
                   {business.listing_source.replace(/_/g, " ")}
                 </span>
               )}
-
-              <div className="flex items-center text-sm font-medium text-primary group-hover:translate-x-1 transition-transform shrink-0">
-                View Profile <ChevronRight className="w-4 h-4 ml-1" />
-              </div>
             </div>
+
+            <Link
+              href={profileHref}
+              className="flex shrink-0 items-center text-sm font-medium text-primary hover:underline transition-transform group-hover:translate-x-0.5"
+            >
+              View Profile <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
           </div>
         </div>
-      </motion.div>
-    </Link>
+      </div>
+    </motion.div>
   );
 }
