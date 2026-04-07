@@ -6,7 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ClaimBusinessRequest {
-  /** Existing business UUID to claim as owner */
-  business_id: string;
-}
+export type AdminListBusinessesParams = {
+  q?: string;
+  page?: number;
+  limit?: number;
+};

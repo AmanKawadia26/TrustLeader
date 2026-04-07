@@ -18,22 +18,30 @@ import (
 )
 
 type API struct {
-	Store  *store.Store
+	Store  Repository
 	Cfg    config.Config
 	Recent *recentcache.Cache
 }
 
 func (a *API) Routes(r chi.Router) {
 	r.Get("/healthz", a.Health)
+	r.Get("/ready", a.Ready)
 	r.Get("/businesses", a.ListBusinesses)
 	r.Get("/businesses/{id}", a.GetBusiness)
 	r.Get("/businesses/{id}/reviews", a.GetBusinessReviews)
 	r.Get("/reviews/recent", a.GetRecentReviews)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.SupabaseJWT(a.Cfg.SupabaseJWTSecret, a.Cfg.SupabaseJWTIssuer))
+		r.Group(func(r chi.Router) {
+			r.Use(adminOnly(a))
+			r.Get("/dashboard/admin/businesses", a.AdminListBusinesses)
+			r.Get("/dashboard/admin/reviews", a.AdminListReviews)
+			r.Patch("/dashboard/admin/reviews/{id}", a.AdminSetReviewStatus)
+		})
 		r.Post("/reviews", a.CreateReview)
 		r.Put("/reviews/{id}", a.UpdateReview)
 		r.Get("/dashboard/company/business", a.GetCompanyBusiness)
+		r.Patch("/dashboard/company/business", a.PatchCompanyBusiness)
 		r.Get("/dashboard/company/reviews", a.GetCompanyReviews)
 		r.Post("/dashboard/company/respond", a.RespondToReview)
 		r.Post("/dashboard/company/claim", a.ClaimCompanyBusiness)
@@ -46,6 +54,20 @@ func (a *API) Routes(r chi.Router) {
 
 func (a *API) Health(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// Ready reports whether the process can serve traffic that requires the database (pool ping).
+func (a *API) Ready(w http.ResponseWriter, r *http.Request) {
+	pool := a.Store.PgxPool()
+	if pool == nil {
+		writeErr(w, http.StatusServiceUnavailable, "unavailable", "database pool not configured")
+		return
+	}
+	if err := pool.Ping(r.Context()); err != nil {
+		writeErr(w, http.StatusServiceUnavailable, "unavailable", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 }
 
 func (a *API) ListBusinesses(w http.ResponseWriter, r *http.Request) {
@@ -182,7 +204,7 @@ func (a *API) CreateReview(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "server_error", err.Error())
 		return
 	}
-	trafficlight.Recalculate(r.Context(), a.Store.Pool, body.BusinessID, uid)
+	trafficlight.Recalculate(r.Context(), a.Store.PgxPool(), body.BusinessID, uid)
 	writeJSON(w, http.StatusCreated, formatReview(*rev))
 }
 
@@ -219,7 +241,7 @@ func (a *API) UpdateReview(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "server_error", err.Error())
 		return
 	}
-	trafficlight.Recalculate(r.Context(), a.Store.Pool, ex.BusinessID, uid)
+	trafficlight.Recalculate(r.Context(), a.Store.PgxPool(), ex.BusinessID, uid)
 	writeJSON(w, http.StatusOK, formatReview(*rev))
 }
 

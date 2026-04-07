@@ -22,6 +22,14 @@ Insurer details are exposed on business payloads as `insurance` when `insurance_
 - **Claim (API):** `POST /api/dashboard/company/claim` with JSON `{ "business_id": "<uuid>" }` (Bearer JWT). Only users with `role = company` may call it. The business must exist, must not already be linked to another user, and the caller must not already be linked to a different business. On success, `users.business_id` is set and `businesses.owner_user_id` / `listing_source = owner_claimed` are updated.
 - **Manual testing:** you can set `business_id` in SQL for a company user if you need to bypass the claim flow.
 
+## Admin demo user (seed)
+
+- After `supabase db reset` (or any run that applies `supabase/seed.sql`), an **auth** user is created for local development:
+  - **Email:** `admin@trustleader.local`
+  - **Password:** `TrustLeaderAdmin!2026`
+  - **User id:** `a0000001-0000-4000-8000-0000000000ad` (same in `auth.users` and `public.users`; role `admin` via signup metadata).
+- Use `/auth/login` or `/auth/admin` in the app. **Change this password** before any shared or production environment; do not rely on seeded credentials outside local dev.
+
 ## Reseller demo data
 
 - After `supabase/seed.sql`, user `a0000001-0000-4000-8000-000000000099` (`reseller-demo@example.com`) has `role = reseller` and a linked `resellers` row with sample `referrals`. For the Go API to authenticate this user, create a matching `auth.users` row (or sign up with Supabase using a fixed UUID via admin API). In development, use any reseller user whose `public.users.reseller_id` matches a row in `resellers`.

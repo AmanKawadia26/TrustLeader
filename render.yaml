@@ -9,6 +9,7 @@ services:
     region: oregon
     plan: free
     dockerfilePath: ./Dockerfile
+    # Liveness: fast, no DB. For DB-backed readiness use /api/ready (503 if DB down).
     healthCheckPath: /api/healthz
     envVars:
       - key: DATABASE_URL

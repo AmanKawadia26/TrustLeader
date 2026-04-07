@@ -32,6 +32,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
+  /ready:
+    get:
+      operationId: readinessCheck
+      tags: [health]
+      summary: Readiness check (database pool ping)
+      responses:
+        "200":
+          description: Ready to serve DB-backed traffic
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadyStatus"
+        "503":
+          description: Not ready (pool missing or DB unreachable)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /businesses:
     get:
       operationId: listBusinesses
@@ -290,6 +309,182 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: patchCompanyBusiness
+      tags: [dashboard]
+      summary: Update linked business name and/or description (company owner)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchCompanyBusinessRequest"
+      responses:
+        "200":
+          description: Updated business profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Not a company account or no linked business
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/admin/businesses:
+    get:
+      operationId: adminListBusinesses
+      tags: [dashboard]
+      summary: Admin - search/list all businesses
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Business list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Not an admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/admin/reviews:
+    get:
+      operationId: adminListReviews
+      tags: [dashboard]
+      summary: Admin - list reviews for moderation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/ReviewStatus"
+        - in: query
+          name: business_id
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Reviews
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Not an admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/admin/reviews/{id}:
+    patch:
+      operationId: adminSetReviewStatus
+      tags: [dashboard]
+      summary: Admin - set review moderation status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSetReviewStatusRequest"
+      responses:
+        "200":
+          description: Updated review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Not an admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /dashboard/company/claim:
     post:
@@ -464,6 +659,15 @@ components:
       required:
         - status
 
+    ReadyStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ready]
+      required:
+        - status
+
     ErrorResponse:
       type: object
       properties:
@@ -602,6 +806,7 @@ components:
           nullable: true
         business_name:
           type: string
+          description: Present on some list endpoints (e.g. admin, consumer)
           nullable: true
         created_at:
           type: string
@@ -618,6 +823,24 @@ components:
         - status
         - created_at
         - updated_at
+
+    PatchCompanyBusinessRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+      description: At least one field should be set
+
+    AdminSetReviewStatusRequest:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/ReviewStatus"
+      required:
+        - status
 
     ReviewListResponse:
       type: object

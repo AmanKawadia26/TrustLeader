@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useCompanyDashboard } from "@/hooks/use-dashboard";
 import { TrafficLightBadge } from "@/components/TrafficLightBadge";
@@ -14,7 +14,8 @@ import { useTranslation } from "react-i18next";
 
 export default function CompanyDashboard() {
   const { t } = useTranslation();
-  const { businessQuery, reviewsQuery, respondMutation, claimMutation } = useCompanyDashboard();
+  const { businessQuery, reviewsQuery, respondMutation, claimMutation, patchBusinessMutation } =
+    useCompanyDashboard();
   const { data: business, isLoading: businessLoading, isError: businessError, error: businessErr } = businessQuery;
   const { data: reviewsData, isLoading: reviewsLoading } = reviewsQuery;
   const [claimBusinessId, setClaimBusinessId] = useState("");
@@ -26,6 +27,15 @@ export default function CompanyDashboard() {
 
   const [respondingTo, setRespondTo] = useState<Review | null>(null);
   const [responseText, setResponseText] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+
+  useEffect(() => {
+    if (business) {
+      setEditName(business.name);
+      setEditDesc(business.description ?? "");
+    }
+  }, [business]);
 
   const handleRespond = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +112,55 @@ export default function CompanyDashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          ) : null}
+
+          {business && !needsClaim && !businessError ? (
+            <div className="mt-8 max-w-xl bg-card border rounded-2xl p-6 shadow-sm space-y-4">
+              <h3 className="font-semibold text-lg">Edit business details</h3>
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  patchBusinessMutation.mutate({
+                    data: {
+                      name: editName.trim(),
+                      description: editDesc.trim() === "" ? null : editDesc.trim(),
+                    },
+                  });
+                }}
+              >
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="biz-name">
+                    Business name
+                  </label>
+                  <Input
+                    id="biz-name"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="biz-desc">
+                    Description
+                  </label>
+                  <Textarea
+                    id="biz-desc"
+                    value={editDesc}
+                    onChange={(e) => setEditDesc(e.target.value)}
+                    className="min-h-[100px]"
+                    placeholder="Optional description"
+                  />
+                </div>
+                <Button type="submit" disabled={patchBusinessMutation.isPending}>
+                  {patchBusinessMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Save changes"
+                  )}
+                </Button>
+              </form>
             </div>
           ) : null}
         </div>

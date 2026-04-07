@@ -3,6 +3,7 @@ import {
   useGetCompanyReviews,
   useRespondToReview,
   useClaimCompanyBusiness,
+  usePatchCompanyBusiness,
   useGetConsumerReviews,
   useGetResellerStats,
   useGetResellerReferrals,
@@ -63,7 +64,20 @@ export function useCompanyDashboard() {
     }
   });
 
-  return { businessQuery, reviewsQuery, respondMutation, claimMutation };
+  const patchBusinessMutation = usePatchCompanyBusiness({
+    request: { headers },
+    mutation: {
+      onSuccess: () => {
+        toast({ title: "Business profile updated." });
+        queryClient.invalidateQueries({ queryKey: ['company-business'] });
+      },
+      onError: (err: Error) => {
+        toast({ title: "Could not update profile", description: err.message, variant: "destructive" });
+      }
+    }
+  });
+
+  return { businessQuery, reviewsQuery, respondMutation, claimMutation, patchBusinessMutation };
 }
 
 export function useConsumerDashboard(params: GetConsumerReviewsParams) {

@@ -286,3 +286,74 @@ VALUES
   ('ref00002-0000-4000-8000-000000000002', 'res00001-0000-4000-8000-000000000001', 'b0000001-0000-4000-8000-000000000002', 'paid', 210.00),
   ('ref00003-0000-4000-8000-000000000003', 'res00001-0000-4000-8000-000000000001', 'b0000001-0000-4000-8000-000000000005', 'pending', 0.00)
 ON CONFLICT (id) DO NOTHING;
+
+-- Demo admin: sign in at /auth/login or /auth/admin with email below; password is for local/dev only (change in production).
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+DO $$
+DECLARE
+  v_user_id uuid := 'a0000001-0000-4000-8000-0000000000ad'::uuid;
+  v_encrypted_pw text := crypt('TrustLeaderAdmin!2026', gen_salt('bf'));
+BEGIN
+  IF EXISTS (SELECT 1 FROM auth.users WHERE id = v_user_id) THEN
+    RETURN;
+  END IF;
+
+  INSERT INTO auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    recovery_sent_at,
+    last_sign_in_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at,
+    confirmation_token,
+    email_change,
+    email_change_token_new,
+    recovery_token
+  ) VALUES (
+    '00000000-0000-0000-0000-000000000000',
+    v_user_id,
+    'authenticated',
+    'authenticated',
+    'admin@trustleader.local',
+    v_encrypted_pw,
+    now(),
+    now(),
+    now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"intended_role":"admin"}',
+    now(),
+    now(),
+    '',
+    '',
+    '',
+    ''
+  );
+
+  INSERT INTO auth.identities (
+    id,
+    user_id,
+    provider_id,
+    identity_data,
+    provider,
+    last_sign_in_at,
+    created_at,
+    updated_at
+  ) VALUES (
+    gen_random_uuid(),
+    v_user_id,
+    v_user_id::text,
+    format('{"sub":"%s","email":"admin@trustleader.local"}', v_user_id)::jsonb,
+    'email',
+    now(),
+    now(),
+    now()
+  );
+END $$;

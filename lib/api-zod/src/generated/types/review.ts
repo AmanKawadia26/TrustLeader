@@ -19,6 +19,7 @@ export interface Review {
   text: string;
   status: ReviewStatus;
   company_response?: string | null;
+  /** Present on some list endpoints (e.g. admin, consumer) */
   business_name?: string | null;
   created_at: Date;
   updated_at: Date;

@@ -15,6 +15,13 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
+ * @summary Readiness check (database pool ping)
+ */
+export const ReadinessCheckResponse = zod.object({
+  status: zod.enum(["ready"]),
+});
+
+/**
  * @summary Search/list businesses
  */
 export const listBusinessesQueryPageDefault = 1;
@@ -168,7 +175,10 @@ export const UpdateReviewResponse = zod.object({
   text: zod.string(),
   status: zod.enum(["pending", "approved", "rejected"]),
   company_response: zod.string().nullish(),
-  business_name: zod.string().nullish(),
+  business_name: zod
+    .string()
+    .nullish()
+    .describe("Present on some list endpoints (e.g. admin, consumer)"),
   created_at: zod.date(),
   updated_at: zod.date(),
 });
@@ -203,7 +213,10 @@ export const GetBusinessReviewsResponse = zod.object({
       text: zod.string(),
       status: zod.enum(["pending", "approved", "rejected"]),
       company_response: zod.string().nullish(),
-      business_name: zod.string().nullish(),
+      business_name: zod
+        .string()
+        .nullish()
+        .describe("Present on some list endpoints (e.g. admin, consumer)"),
       created_at: zod.date(),
       updated_at: zod.date(),
     }),
@@ -240,7 +253,10 @@ export const GetCompanyReviewsResponse = zod.object({
       text: zod.string(),
       status: zod.enum(["pending", "approved", "rejected"]),
       company_response: zod.string().nullish(),
-      business_name: zod.string().nullish(),
+      business_name: zod
+        .string()
+        .nullish()
+        .describe("Present on some list endpoints (e.g. admin, consumer)"),
       created_at: zod.date(),
       updated_at: zod.date(),
     }),
@@ -269,7 +285,10 @@ export const RespondToReviewResponse = zod.object({
   text: zod.string(),
   status: zod.enum(["pending", "approved", "rejected"]),
   company_response: zod.string().nullish(),
-  business_name: zod.string().nullish(),
+  business_name: zod
+    .string()
+    .nullish()
+    .describe("Present on some list endpoints (e.g. admin, consumer)"),
   created_at: zod.date(),
   updated_at: zod.date(),
 });
@@ -309,6 +328,185 @@ export const GetCompanyBusinessResponse = zod.object({
 });
 
 /**
+ * @summary Update linked business name and/or description (company owner)
+ */
+export const PatchCompanyBusinessBody = zod
+  .object({
+    name: zod.string().optional(),
+    description: zod.string().nullish(),
+  })
+  .describe("At least one field should be set");
+
+export const PatchCompanyBusinessResponse = zod.object({
+  id: zod.string(),
+  domain: zod.string(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  traffic_light: zod.enum(["red", "orange", "green"]),
+  insurance_proof: zod
+    .boolean()
+    .describe("Insurer has acknowledged coverage via TrustLeader"),
+  listing_source: zod.enum([
+    "owner_claimed",
+    "import_scrape",
+    "consumer_first_review",
+  ]),
+  listing_status: zod.enum(["pending_verification", "active", "archived"]),
+  insurance: zod
+    .object({
+      id: zod.string(),
+      name: zod.string(),
+      slug: zod.string(),
+      logo_url: zod.string().nullish(),
+      description: zod.string().nullish(),
+      terms_url: zod.string().nullish(),
+    })
+    .nullish(),
+  review_count: zod.number(),
+  average_rating: zod.number().nullish(),
+  created_at: zod.date(),
+  updated_at: zod.date(),
+});
+
+/**
+ * @summary Admin - search/list all businesses
+ */
+export const adminListBusinessesQueryPageDefault = 1;
+export const adminListBusinessesQueryLimitDefault = 20;
+
+export const AdminListBusinessesQueryParams = zod.object({
+  q: zod.coerce.string().optional(),
+  page: zod.coerce.number().default(adminListBusinessesQueryPageDefault),
+  limit: zod.coerce.number().default(adminListBusinessesQueryLimitDefault),
+});
+
+export const AdminListBusinessesResponse = zod.object({
+  businesses: zod.array(
+    zod.object({
+      id: zod.string(),
+      domain: zod.string(),
+      name: zod.string(),
+      description: zod.string().nullish(),
+      traffic_light: zod.enum(["red", "orange", "green"]),
+      insurance_proof: zod
+        .boolean()
+        .describe("Insurer has acknowledged coverage via TrustLeader"),
+      listing_source: zod.enum([
+        "owner_claimed",
+        "import_scrape",
+        "consumer_first_review",
+      ]),
+      listing_status: zod.enum(["pending_verification", "active", "archived"]),
+      insurance: zod
+        .object({
+          id: zod.string(),
+          name: zod.string(),
+          slug: zod.string(),
+          logo_url: zod.string().nullish(),
+          description: zod.string().nullish(),
+          terms_url: zod.string().nullish(),
+        })
+        .nullish(),
+      review_count: zod.number(),
+      average_rating: zod.number().nullish(),
+      created_at: zod.date(),
+      updated_at: zod.date(),
+    }),
+  ),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
+
+/**
+ * @summary Admin - list reviews for moderation
+ */
+export const adminListReviewsQueryPageDefault = 1;
+export const adminListReviewsQueryLimitDefault = 20;
+
+export const AdminListReviewsQueryParams = zod.object({
+  status: zod.enum(["pending", "approved", "rejected"]).optional(),
+  business_id: zod.coerce.string().optional(),
+  page: zod.coerce.number().default(adminListReviewsQueryPageDefault),
+  limit: zod.coerce.number().default(adminListReviewsQueryLimitDefault),
+});
+
+export const adminListReviewsResponseReviewsItemRatingMax = 5;
+
+export const AdminListReviewsResponse = zod.object({
+  reviews: zod.array(
+    zod.object({
+      id: zod.string(),
+      business_id: zod.string(),
+      user_id: zod.string(),
+      rating: zod
+        .number()
+        .min(1)
+        .max(adminListReviewsResponseReviewsItemRatingMax),
+      text: zod.string(),
+      status: zod.enum(["pending", "approved", "rejected"]),
+      company_response: zod.string().nullish(),
+      business_name: zod
+        .string()
+        .nullish()
+        .describe("Present on some list endpoints (e.g. admin, consumer)"),
+      created_at: zod.date(),
+      updated_at: zod.date(),
+    }),
+  ),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
+
+/**
+ * @summary Admin - set review moderation status
+ */
+export const AdminSetReviewStatusParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const AdminSetReviewStatusBody = zod.object({
+  status: zod.enum(["pending", "approved", "rejected"]),
+});
+
+export const adminSetReviewStatusResponseRatingMax = 5;
+
+export const AdminSetReviewStatusResponse = zod.object({
+  id: zod.string(),
+  business_id: zod.string(),
+  user_id: zod.string(),
+  rating: zod.number().min(1).max(adminSetReviewStatusResponseRatingMax),
+  text: zod.string(),
+  status: zod.enum(["pending", "approved", "rejected"]),
+  company_response: zod.string().nullish(),
+  business_name: zod
+    .string()
+    .nullish()
+    .describe("Present on some list endpoints (e.g. admin, consumer)"),
+  created_at: zod.date(),
+  updated_at: zod.date(),
+});
+
+/**
+ * @summary Link company account to an existing business (owner claim)
+ */
+export const ClaimCompanyBusinessBody = zod.object({
+  business_id: zod
+    .string()
+    .describe("Existing business UUID to claim as owner"),
+});
+
+export const ClaimCompanyBusinessResponse = zod.object({
+  id: zod.string(),
+  email: zod.string(),
+  role: zod.enum(["consumer", "company", "reseller", "admin"]),
+  business_id: zod.string().nullish(),
+  reseller_id: zod.string().nullish(),
+  created_at: zod.date(),
+});
+
+/**
  * @summary Consumer dashboard - get own reviews
  */
 export const getConsumerReviewsQueryPageDefault = 1;
@@ -334,7 +532,10 @@ export const GetConsumerReviewsResponse = zod.object({
       text: zod.string(),
       status: zod.enum(["pending", "approved", "rejected"]),
       company_response: zod.string().nullish(),
-      business_name: zod.string().nullish(),
+      business_name: zod
+        .string()
+        .nullish()
+        .describe("Present on some list endpoints (e.g. admin, consumer)"),
       created_at: zod.date(),
       updated_at: zod.date(),
     }),

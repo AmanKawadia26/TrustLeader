@@ -22,6 +22,8 @@ const Register = lazy(() => import("@/pages/auth/Register"));
 const CompanyDashboard = lazy(() => import("@/pages/dashboard/CompanyDashboard"));
 const ConsumerDashboard = lazy(() => import("@/pages/dashboard/ConsumerDashboard"));
 const ResellerDashboard = lazy(() => import("@/pages/dashboard/ResellerDashboard"));
+const AdminDashboard = lazy(() => import("@/pages/dashboard/AdminDashboard"));
+const AdminLogin = lazy(() => import("@/pages/auth/AdminLogin"));
 
 const queryClient = new QueryClient();
 
@@ -66,6 +68,7 @@ function Router() {
         
         {/* Auth routes */}
         <Route path="/auth/login" component={Login} />
+        <Route path="/auth/admin" component={AdminLogin} />
         <Route path="/auth/register/business" component={Register} />
         <Route path="/auth/register" component={Register} />
         
@@ -83,6 +86,9 @@ function Router() {
         </Route>
         <Route path="/dashboard/reseller">
           {() => <ProtectedRoute component={ResellerDashboard} allowedRoles={['reseller']} />}
+        </Route>
+        <Route path="/dashboard/admin">
+          {() => <ProtectedRoute component={AdminDashboard} allowedRoles={['admin']} />}
         </Route>
 
         <Route component={NotFound} />

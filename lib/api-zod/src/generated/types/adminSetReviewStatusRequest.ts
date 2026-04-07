@@ -5,8 +5,8 @@
  * Trustleader.org API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ReviewStatus } from "./reviewStatus";
 
-export interface ClaimBusinessRequest {
-  /** Existing business UUID to claim as owner */
-  business_id: string;
+export interface AdminSetReviewStatusRequest {
+  status: ReviewStatus;
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/dbconn"
@@ -38,6 +39,9 @@ func New(ctx context.Context, databaseURL string) (*Store, error) {
 }
 
 func (s *Store) Close() { s.Pool.Close() }
+
+// PgxPool exposes the pool for traffic-light recalculation and readiness checks.
+func (s *Store) PgxPool() *pgxpool.Pool { return s.Pool }
 
 type InsuranceCompany struct {
 	ID          string
@@ -480,6 +484,113 @@ func (s *Store) ListReferrals(ctx context.Context, resellerID string, page, limi
 		list = append(list, r)
 	}
 	return list, total, rows.Err()
+}
+
+// ErrNoOwnedBusiness is returned when a user has no linked business for owner updates.
+var ErrNoOwnedBusiness = errors.New("no business linked to this account")
+
+// ErrEmptyBusinessName is returned when a PATCH supplies an empty name.
+var ErrEmptyBusinessName = errors.New("name cannot be empty")
+
+// AdminListReviews lists reviews across all businesses (optional status and business_id filters).
+func (s *Store) AdminListReviews(ctx context.Context, status *string, businessID *string, page, limit int) ([]Review, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	offset := (page - 1) * limit
+	var total int
+	err := s.Pool.QueryRow(ctx, `
+		SELECT COUNT(*) FROM reviews r
+		WHERE ($1::text IS NULL OR r.status::text = $1)
+		AND ($2::text IS NULL OR r.business_id = $2)`, status, businessID).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+	rows, err := s.Pool.Query(ctx, `
+		SELECT r.id, r.business_id, r.user_id, r.rating, r.text, r.status::text, r.company_response, r.created_at, r.updated_at, b.name
+		FROM reviews r
+		JOIN businesses b ON b.id = r.business_id
+		WHERE ($1::text IS NULL OR r.status::text = $1)
+		AND ($2::text IS NULL OR r.business_id = $2)
+		ORDER BY r.created_at DESC
+		LIMIT $3 OFFSET $4`, status, businessID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	var list []Review
+	for rows.Next() {
+		var r Review
+		var bname string
+		err := rows.Scan(&r.ID, &r.BusinessID, &r.UserID, &r.Rating, &r.Text, &r.Status, &r.CompanyResponse, &r.CreatedAt, &r.UpdatedAt, &bname)
+		if err != nil {
+			return nil, 0, err
+		}
+		r.BusinessName = &bname
+		list = append(list, r)
+	}
+	return list, total, rows.Err()
+}
+
+// AdminSetReviewStatus sets moderation status (pending, approved, rejected).
+func (s *Store) AdminSetReviewStatus(ctx context.Context, reviewID, status string) (*Review, error) {
+	switch status {
+	case "pending", "approved", "rejected":
+	default:
+		return nil, fmt.Errorf("invalid status %q", status)
+	}
+	row := s.Pool.QueryRow(ctx, `UPDATE reviews SET status = $2::review_status, updated_at = NOW() WHERE id = $1
+		RETURNING id, business_id, user_id, rating, text, status::text, company_response, created_at, updated_at`,
+		reviewID, status)
+	var r Review
+	err := row.Scan(&r.ID, &r.BusinessID, &r.UserID, &r.Rating, &r.Text, &r.Status, &r.CompanyResponse, &r.CreatedAt, &r.UpdatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &r, nil
+}
+
+// UpdateBusinessOwned updates name and/or description for the business linked to the user (company owner).
+func (s *Store) UpdateBusinessOwned(ctx context.Context, userID string, name *string, description *string) (*Business, error) {
+	u, err := s.GetUser(ctx, userID)
+	if err != nil || u == nil || u.BusinessID == nil {
+		return nil, ErrNoOwnedBusiness
+	}
+	b, err := s.GetBusiness(ctx, *u.BusinessID)
+	if err != nil || b == nil {
+		return nil, err
+	}
+	newName := b.Name
+	if name != nil {
+		t := strings.TrimSpace(*name)
+		if t == "" {
+			return nil, ErrEmptyBusinessName
+		}
+		newName = t
+	}
+	var newDesc *string
+	if description != nil {
+		t := strings.TrimSpace(*description)
+		if t == "" {
+			newDesc = nil
+		} else {
+			newDesc = &t
+		}
+	} else {
+		newDesc = b.Description
+	}
+	_, err = s.Pool.Exec(ctx, `UPDATE businesses SET name = $2, description = $3, updated_at = NOW() WHERE id = $1`,
+		*u.BusinessID, newName, newDesc)
+	if err != nil {
+		return nil, err
+	}
+	return s.GetBusiness(ctx, *u.BusinessID)
 }
 
 // Claim errors for HTTP mapping.

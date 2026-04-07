@@ -9,6 +9,17 @@ export interface HealthStatus {
   status: string;
 }
 
+export type ReadyStatusStatus =
+  (typeof ReadyStatusStatus)[keyof typeof ReadyStatusStatus];
+
+export const ReadyStatusStatus = {
+  ready: "ready",
+} as const;
+
+export interface ReadyStatus {
+  status: ReadyStatusStatus;
+}
+
 export interface ErrorResponse {
   error: string;
   message?: string;
@@ -91,9 +102,22 @@ export interface Review {
   text: string;
   status: ReviewStatus;
   company_response?: string | null;
+  /** Present on some list endpoints (e.g. admin, consumer) */
   business_name?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * At least one field should be set
+ */
+export interface PatchCompanyBusinessRequest {
+  name?: string;
+  description?: string | null;
+}
+
+export interface AdminSetReviewStatusRequest {
+  status: ReviewStatus;
 }
 
 export interface ReviewListResponse {
@@ -235,6 +259,19 @@ export const GetCompanyReviewsStatus = {
   approved: "approved",
   rejected: "rejected",
 } as const;
+
+export type AdminListBusinessesParams = {
+  q?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type AdminListReviewsParams = {
+  status?: ReviewStatus;
+  business_id?: string;
+  page?: number;
+  limit?: number;
+};
 
 export type GetConsumerReviewsParams = {
   page?: number;

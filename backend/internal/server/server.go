@@ -1,7 +1,9 @@
 package server
 
 import (
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/AmanKawadia26/TrustLeader/backend/internal/config"
@@ -15,11 +17,28 @@ import (
 )
 
 func New(cfg config.Config, st *store.Store, recent *recentcache.Cache) *http.Server {
+	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Logger)
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			next.ServeHTTP(ww, r)
+			reqID := middleware.GetReqID(r.Context())
+			log.Info("http_request",
+				slog.String("request_id", reqID),
+				slog.String("method", r.Method),
+				slog.String("path", r.URL.Path),
+				slog.Int("status", ww.Status()),
+				slog.Int64("duration_ms", time.Since(start).Milliseconds()),
+				slog.Int("bytes", ww.BytesWritten()),
+			)
+		})
+	})
 	r.Use(httprate.Limit(cfg.RateLimitPerMin, 1*time.Minute))
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   cfg.CORSAllowedOrigins,

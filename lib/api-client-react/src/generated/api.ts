@@ -17,8 +17,12 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AdminListBusinessesParams,
+  AdminListReviewsParams,
+  AdminSetReviewStatusRequest,
   Business,
   BusinessListResponse,
+  ClaimBusinessRequest,
   CreateReviewRequest,
   ErrorResponse,
   GetBusinessReviewsParams,
@@ -27,10 +31,11 @@ import type {
   GetResellerReferralsParams,
   HealthStatus,
   ListBusinessesParams,
+  PatchCompanyBusinessRequest,
+  ReadyStatus,
   RecentReviewsResponse,
   ReferralListResponse,
   ResellerStats,
-  ClaimBusinessRequest,
   RespondToReviewRequest,
   Review,
   ReviewListResponse,
@@ -114,6 +119,81 @@ export function useHealthCheck<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getHealthCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Readiness check (database pool ping)
+ */
+export const getReadinessCheckUrl = () => {
+  return `/api/ready`;
+};
+
+export const readinessCheck = async (
+  options?: RequestInit,
+): Promise<ReadyStatus> => {
+  return customFetch<ReadyStatus>(getReadinessCheckUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getReadinessCheckQueryKey = () => {
+  return [`/api/ready`] as const;
+};
+
+export const getReadinessCheckQueryOptions = <
+  TData = Awaited<ReturnType<typeof readinessCheck>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof readinessCheck>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getReadinessCheckQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof readinessCheck>>> = ({
+    signal,
+  }) => readinessCheck({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof readinessCheck>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ReadinessCheckQueryResult = NonNullable<
+  Awaited<ReturnType<typeof readinessCheck>>
+>;
+export type ReadinessCheckQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Readiness check (database pool ping)
+ */
+
+export function useReadinessCheck<
+  TData = Awaited<ReturnType<typeof readinessCheck>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof readinessCheck>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getReadinessCheckQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -851,6 +931,456 @@ export const useRespondToReview = <
 };
 
 /**
+ * @summary Company dashboard - get own business profile
+ */
+export const getGetCompanyBusinessUrl = () => {
+  return `/api/dashboard/company/business`;
+};
+
+export const getCompanyBusiness = async (
+  options?: RequestInit,
+): Promise<Business> => {
+  return customFetch<Business>(getGetCompanyBusinessUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCompanyBusinessQueryKey = () => {
+  return [`/api/dashboard/company/business`] as const;
+};
+
+export const getGetCompanyBusinessQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCompanyBusiness>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCompanyBusiness>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCompanyBusinessQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCompanyBusiness>>
+  > = ({ signal }) => getCompanyBusiness({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCompanyBusiness>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCompanyBusinessQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCompanyBusiness>>
+>;
+export type GetCompanyBusinessQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Company dashboard - get own business profile
+ */
+
+export function useGetCompanyBusiness<
+  TData = Awaited<ReturnType<typeof getCompanyBusiness>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCompanyBusiness>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCompanyBusinessQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update linked business name and/or description (company owner)
+ */
+export const getPatchCompanyBusinessUrl = () => {
+  return `/api/dashboard/company/business`;
+};
+
+export const patchCompanyBusiness = async (
+  patchCompanyBusinessRequest: PatchCompanyBusinessRequest,
+  options?: RequestInit,
+): Promise<Business> => {
+  return customFetch<Business>(getPatchCompanyBusinessUrl(), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(patchCompanyBusinessRequest),
+  });
+};
+
+export const getPatchCompanyBusinessMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchCompanyBusiness>>,
+    TError,
+    { data: BodyType<PatchCompanyBusinessRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof patchCompanyBusiness>>,
+  TError,
+  { data: BodyType<PatchCompanyBusinessRequest> },
+  TContext
+> => {
+  const mutationKey = ["patchCompanyBusiness"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof patchCompanyBusiness>>,
+    { data: BodyType<PatchCompanyBusinessRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return patchCompanyBusiness(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PatchCompanyBusinessMutationResult = NonNullable<
+  Awaited<ReturnType<typeof patchCompanyBusiness>>
+>;
+export type PatchCompanyBusinessMutationBody =
+  BodyType<PatchCompanyBusinessRequest>;
+export type PatchCompanyBusinessMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update linked business name and/or description (company owner)
+ */
+export const usePatchCompanyBusiness = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchCompanyBusiness>>,
+    TError,
+    { data: BodyType<PatchCompanyBusinessRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof patchCompanyBusiness>>,
+  TError,
+  { data: BodyType<PatchCompanyBusinessRequest> },
+  TContext
+> => {
+  return useMutation(getPatchCompanyBusinessMutationOptions(options));
+};
+
+/**
+ * @summary Admin - search/list all businesses
+ */
+export const getAdminListBusinessesUrl = (
+  params?: AdminListBusinessesParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/dashboard/admin/businesses?${stringifiedParams}`
+    : `/api/dashboard/admin/businesses`;
+};
+
+export const adminListBusinesses = async (
+  params?: AdminListBusinessesParams,
+  options?: RequestInit,
+): Promise<BusinessListResponse> => {
+  return customFetch<BusinessListResponse>(getAdminListBusinessesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAdminListBusinessesQueryKey = (
+  params?: AdminListBusinessesParams,
+) => {
+  return [
+    `/api/dashboard/admin/businesses`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getAdminListBusinessesQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminListBusinesses>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  params?: AdminListBusinessesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof adminListBusinesses>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getAdminListBusinessesQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminListBusinesses>>
+  > = ({ signal }) =>
+    adminListBusinesses(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminListBusinesses>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AdminListBusinessesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminListBusinesses>>
+>;
+export type AdminListBusinessesQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Admin - search/list all businesses
+ */
+
+export function useAdminListBusinesses<
+  TData = Awaited<ReturnType<typeof adminListBusinesses>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  params?: AdminListBusinessesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof adminListBusinesses>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAdminListBusinessesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Admin - list reviews for moderation
+ */
+export const getAdminListReviewsUrl = (params?: AdminListReviewsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/dashboard/admin/reviews?${stringifiedParams}`
+    : `/api/dashboard/admin/reviews`;
+};
+
+export const adminListReviews = async (
+  params?: AdminListReviewsParams,
+  options?: RequestInit,
+): Promise<ReviewListResponse> => {
+  return customFetch<ReviewListResponse>(getAdminListReviewsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAdminListReviewsQueryKey = (
+  params?: AdminListReviewsParams,
+) => {
+  return [`/api/dashboard/admin/reviews`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminListReviewsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminListReviews>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  params?: AdminListReviewsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof adminListReviews>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getAdminListReviewsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof adminListReviews>>
+  > = ({ signal }) => adminListReviews(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminListReviews>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AdminListReviewsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminListReviews>>
+>;
+export type AdminListReviewsQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Admin - list reviews for moderation
+ */
+
+export function useAdminListReviews<
+  TData = Awaited<ReturnType<typeof adminListReviews>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  params?: AdminListReviewsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof adminListReviews>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAdminListReviewsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Admin - set review moderation status
+ */
+export const getAdminSetReviewStatusUrl = (id: string) => {
+  return `/api/dashboard/admin/reviews/${id}`;
+};
+
+export const adminSetReviewStatus = async (
+  id: string,
+  adminSetReviewStatusRequest: AdminSetReviewStatusRequest,
+  options?: RequestInit,
+): Promise<Review> => {
+  return customFetch<Review>(getAdminSetReviewStatusUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminSetReviewStatusRequest),
+  });
+};
+
+export const getAdminSetReviewStatusMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminSetReviewStatus>>,
+    TError,
+    { id: string; data: BodyType<AdminSetReviewStatusRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminSetReviewStatus>>,
+  TError,
+  { id: string; data: BodyType<AdminSetReviewStatusRequest> },
+  TContext
+> => {
+  const mutationKey = ["adminSetReviewStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminSetReviewStatus>>,
+    { id: string; data: BodyType<AdminSetReviewStatusRequest> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminSetReviewStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminSetReviewStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminSetReviewStatus>>
+>;
+export type AdminSetReviewStatusMutationBody =
+  BodyType<AdminSetReviewStatusRequest>;
+export type AdminSetReviewStatusMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Admin - set review moderation status
+ */
+export const useAdminSetReviewStatus = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminSetReviewStatus>>,
+    TError,
+    { id: string; data: BodyType<AdminSetReviewStatusRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adminSetReviewStatus>>,
+  TError,
+  { id: string; data: BodyType<AdminSetReviewStatusRequest> },
+  TContext
+> => {
+  return useMutation(getAdminSetReviewStatusMutationOptions(options));
+};
+
+/**
  * @summary Link company account to an existing business (owner claim)
  */
 export const getClaimCompanyBusinessUrl = () => {
@@ -935,81 +1465,6 @@ export const useClaimCompanyBusiness = <
 > => {
   return useMutation(getClaimCompanyBusinessMutationOptions(options));
 };
-
-/**
- * @summary Company dashboard - get own business profile
- */
-export const getGetCompanyBusinessUrl = () => {
-  return `/api/dashboard/company/business`;
-};
-
-export const getCompanyBusiness = async (
-  options?: RequestInit,
-): Promise<Business> => {
-  return customFetch<Business>(getGetCompanyBusinessUrl(), {
-    ...options,
-    method: "GET",
-  });
-};
-
-export const getGetCompanyBusinessQueryKey = () => {
-  return [`/api/dashboard/company/business`] as const;
-};
-
-export const getGetCompanyBusinessQueryOptions = <
-  TData = Awaited<ReturnType<typeof getCompanyBusiness>>,
-  TError = ErrorType<ErrorResponse>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCompanyBusiness>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getGetCompanyBusinessQueryKey();
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getCompanyBusiness>>
-  > = ({ signal }) => getCompanyBusiness({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getCompanyBusiness>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
-};
-
-export type GetCompanyBusinessQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getCompanyBusiness>>
->;
-export type GetCompanyBusinessQueryError = ErrorType<ErrorResponse>;
-
-/**
- * @summary Company dashboard - get own business profile
- */
-
-export function useGetCompanyBusiness<
-  TData = Awaited<ReturnType<typeof getCompanyBusiness>>,
-  TError = ErrorType<ErrorResponse>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCompanyBusiness>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetCompanyBusinessQueryOptions(options);
-
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
-
-  return { ...query, queryKey: queryOptions.queryKey };
-}
 
 /**
  * @summary Consumer dashboard - get own reviews

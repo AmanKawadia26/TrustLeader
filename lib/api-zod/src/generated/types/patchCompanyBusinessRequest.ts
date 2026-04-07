@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ClaimBusinessRequest {
-  /** Existing business UUID to claim as owner */
-  business_id: string;
+/**
+ * At least one field should be set
+ */
+export interface PatchCompanyBusinessRequest {
+  name?: string;
+  description?: string | null;
 }
