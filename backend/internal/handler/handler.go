@@ -31,6 +31,7 @@ type API struct {
 func (a *API) Routes(r chi.Router) {
 	r.Get("/healthz", a.Health)
 	r.Get("/ready", a.Ready)
+	r.Get("/cron/keepalive", a.KeepaliveCron)
 	r.Get("/businesses", a.ListBusinesses)
 	r.Get("/businesses/{id}", a.GetBusiness)
 	r.Get("/businesses/{id}/reviews", a.GetBusinessReviews)

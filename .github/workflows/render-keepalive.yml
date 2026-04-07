@@ -1,0 +1,34 @@
+# Pings the API every 14 minutes so Render (and similar) free-tier services stay warm,
+# and refreshes the recent-reviews in-memory cache (GET /api/cron/keepalive).
+#
+# Secrets (repo → Settings → Secrets and variables → Actions):
+#   RENDER_KEEPALIVE_URL — full URL, e.g. https://your-api.onrender.com/api/cron/keepalive
+#   CRON_SECRET — optional; must match CRON_SECRET on the Render service if you set it there.
+
+name: Render keepalive
+
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit keepalive
+        env:
+          URL: ${{ secrets.RENDER_KEEPALIVE_URL }}
+          SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${URL:-}" ]; then
+            echo "RENDER_KEEPALIVE_URL is not set; skipping."
+            exit 0
+          fi
+          if [ -n "${SECRET:-}" ]; then
+            curl -fsS -H "X-Cron-Secret: ${SECRET}" "$URL"
+          else
+            curl -fsS "$URL"
+          fi
+          echo

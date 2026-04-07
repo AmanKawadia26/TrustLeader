@@ -25,6 +25,13 @@
 
 **Health check:** `GET /api/healthz` (see [render.yaml](../render.yaml) `healthCheckPath`).
 
+**Keepalive (Render free tier / idle spin-down):** Render stops the web service after about 15 minutes without HTTP traffic. Schedule an external ping every **14 minutes** (or similar) so the instance stays warm.
+
+- **Endpoint:** `GET /api/cron/keepalive` — returns `200` and refreshes the in-memory recent-reviews cache from Postgres (same data as `GET /api/reviews/recent`).
+- **Optional auth:** set `CRON_SECRET` on the Render service. Then callers must send `X-Cron-Secret: <CRON_SECRET>` or `?secret=<CRON_SECRET>` (GitHub Actions workflow uses the header).
+- **GitHub Actions:** enable the workflow [.github/workflows/render-keepalive.yml](../.github/workflows/render-keepalive.yml) by adding repo secrets `RENDER_KEEPALIVE_URL` (full URL to `/api/cron/keepalive`) and, if used, `CRON_SECRET`. If `RENDER_KEEPALIVE_URL` is unset, the workflow no-ops.
+- **Alternatives:** [cron-job.org](https://cron-job.org), UptimeRobot, or another HTTP scheduler hitting the same URL.
+
 ## 2. Deploy the frontend on Vercel
 
 Pick **one** layout (both are supported):

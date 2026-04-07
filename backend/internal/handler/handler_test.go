@@ -19,6 +19,35 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+func TestKeepaliveCron_OK_WithoutRecent(t *testing.T) {
+	t.Setenv("CRON_SECRET", "")
+	api := API{Recent: nil}
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/cron/keepalive", nil)
+	api.KeepaliveCron(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d", rec.Code)
+	}
+	var body map[string]interface{}
+	if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
+		t.Fatal(err)
+	}
+	if body["status"] != "ok" {
+		t.Fatalf("body %#v", body)
+	}
+}
+
+func TestKeepaliveCron_UnauthorizedWhenSecretSet(t *testing.T) {
+	t.Setenv("CRON_SECRET", "secret-token")
+	api := API{Recent: nil}
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/cron/keepalive", nil)
+	api.KeepaliveCron(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
 func TestHealth(t *testing.T) {
 	var api API
 	rec := httptest.NewRecorder()
