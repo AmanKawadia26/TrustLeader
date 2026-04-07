@@ -32,6 +32,14 @@
 - **GitHub Actions:** enable the workflow [.github/workflows/render-keepalive.yml](../.github/workflows/render-keepalive.yml) by adding repo secrets `RENDER_KEEPALIVE_URL` (full URL to `/api/cron/keepalive`) and, if used, `CRON_SECRET`. If `RENDER_KEEPALIVE_URL` is unset, the workflow no-ops.
 - **Alternatives:** [cron-job.org](https://cron-job.org), UptimeRobot, or another HTTP scheduler hitting the same URL.
 
+**Checklist (verify in dashboards):**
+
+| Where | What to confirm |
+|-------|-----------------|
+| Render | Optional `CRON_SECRET` — if set, schedulers must send `X-Cron-Secret` (must match GitHub secret if you use Actions). |
+| GitHub repo → Settings → Secrets and variables → Actions | `RENDER_KEEPALIVE_URL` = `https://<your-render-host>/api/cron/keepalive` (no trailing slash). Optional `CRON_SECRET` same as Render. |
+| GitHub → Actions | Workflow **Render keepalive** is enabled; recent runs succeed or skip only when `RENDER_KEEPALIVE_URL` is unset. |
+
 ## 2. Deploy the frontend on Vercel
 
 Pick **one** layout (both are supported):

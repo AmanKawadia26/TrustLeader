@@ -49,7 +49,7 @@ Copy from [`artifacts/trustleader/.env.example`](../artifacts/trustleader/.env.e
 
 ## 4. Authentication
 
-- **Public routes:** `GET /api/healthz`, `GET /api/businesses`, `GET /api/businesses/{id}`, `GET /api/businesses/{id}/reviews`, `GET /api/reviews/recent` — **no** `Authorization` header.
+- **Public routes:** `GET /api/healthz`, `GET /api/ready`, `GET /api/businesses`, `GET /api/businesses/{id}`, `GET /api/businesses/{id}/reviews`, `GET /api/reviews/recent`, `GET /api/insurance-companies/{slug}`, `GET /api/insurance-companies/{slug}/businesses`, `GET /api/cron/keepalive` — **no** `Authorization` header (see table below for details).
 - **Protected routes:** everything else in the table below — send **`Authorization: Bearer <access_token>`** where `<access_token>` is the Supabase session JWT (`supabase.auth.getSession()`).
 
 The reference app registers a token getter in [`api-setup.ts`](../artifacts/trustleader/src/lib/api-setup.ts) via `setAuthTokenGetter` from `@workspace/api-client-react`.
@@ -66,10 +66,14 @@ All paths below are relative to the **API root** including `/api` (e.g. full pat
 
 | Method | Path | Auth | Summary |
 |--------|------|------|---------|
-| GET | `/healthz` | No | Liveness: `{ "status": "ok" }` |
+| GET | `/healthz` | No | Liveness: `{ "status": "ok" }` (no DB). |
+| GET | `/ready` | No | Readiness: DB pool ping; **503** if DB unreachable. |
+| GET | `/cron/keepalive` | No | Scheduled ping / warm instance: refreshes recent-reviews cache; optional `CRON_SECRET` via `X-Cron-Secret` or `?secret=` (see [DEPLOY.md](DEPLOY.md)). |
 | GET | `/businesses` | No | Query: `q`, `page`, `limit`. Returns `businesses`, `total`, `page`, `limit`. |
 | GET | `/businesses/{id}` | No | Single **Business** (see schema: `traffic_light`, `insurance_proof`, `listing_source`, `listing_status`, nested `insurance`). |
 | GET | `/businesses/{id}/reviews` | No | Public approved reviews (paged). |
+| GET | `/insurance-companies/{slug}` | No | Insurer by slug + derived **stats** (partner businesses, review aggregates). **404** if unknown slug. |
+| GET | `/insurance-companies/{slug}/businesses` | No | Partner businesses (`insurance_proof`, active listing); query `page`, `limit`. **404** if slug unknown. |
 | GET | `/reviews/recent` | No | Cached snapshot of recent **approved** reviews for home/marketing; includes `refreshed_at`. |
 | POST | `/reviews` | Yes | Create review (`business_id`, `rating`, `text` min 10 chars). Typically `pending` moderation. |
 | PUT | `/reviews/{id}` | Yes | Author updates their review. |
