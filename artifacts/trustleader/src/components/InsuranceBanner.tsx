@@ -1,8 +1,11 @@
 import type { InsuranceCompanySummary } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function InsuranceBanner({ insurance }: { insurance: InsuranceCompanySummary }) {
+  const { t } = useTranslation();
+
   return (
     <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/90 dark:bg-emerald-950/40 dark:border-emerald-800 p-6 shadow-sm">
       <div className="flex items-start gap-4">
@@ -11,7 +14,7 @@ export function InsuranceBanner({ insurance }: { insurance: InsuranceCompanySumm
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-900 dark:text-emerald-200">
-            Insurance-backed on TrustLeader
+            {t("business.insuranceBanner")}
           </p>
           <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <h3 className="font-serif text-xl text-emerald-950 dark:text-emerald-50">

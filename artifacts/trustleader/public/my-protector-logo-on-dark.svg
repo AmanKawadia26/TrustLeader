@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 48" role="img" aria-labelledby="mpLogoDarkTitle">
+  <title id="mpLogoDarkTitle">My Protector</title>
+  <defs>
+    <linearGradient id="mpFillD" x1="22" y1="6" x2="22" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="mpStrokeD" x1="22" y1="42" x2="22" y2="4" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#a5f3fc"/>
+    </linearGradient>
+    <linearGradient id="mpTileAD" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="mpTileBD" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a5f3fc"/>
+      <stop offset="100%" stop-color="#67e8f9"/>
+    </linearGradient>
+    <filter id="mpDropD" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2.5" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <g filter="url(#mpDropD)">
+    <path
+      fill="url(#mpFillD)"
+      stroke="url(#mpStrokeD)"
+      stroke-width="2.4"
+      stroke-linejoin="round"
+      d="M22 4 L36 8.5 L36 25.5c0 7.2-5.8 13.6-14 15.8l-.5.2-.5-.2C13.8 39.1 8 32.7 8 25.5V8.5L22 4Z"
+    />
+  </g>
+  <rect x="12.2" y="16.8" width="5.1" height="5.1" rx="1" fill="url(#mpTileAD)"/>
+  <rect x="18.1" y="16.8" width="5.1" height="5.1" rx="1" fill="url(#mpTileBD)"/>
+  <rect x="12.2" y="22.7" width="5.1" height="5.1" rx="1" fill="url(#mpTileBD)"/>
+  <rect x="18.1" y="22.7" width="5.1" height="5.1" rx="1" fill="url(#mpTileAD)"/>
+  <text
+    x="48"
+    y="29"
+    fill="#f8fafc"
+    font-family="system-ui,-apple-system,'Segoe UI',Inter,Roboto,sans-serif"
+    font-size="17"
+    font-weight="700"
+    letter-spacing="-0.03em"
+  >My Protector</text>
+</svg>

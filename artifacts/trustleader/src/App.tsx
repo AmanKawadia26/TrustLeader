@@ -13,6 +13,7 @@ const BusinessProfile = lazy(() => import("@/pages/BusinessProfile"));
 const InsuranceProfile = lazy(() => import("@/pages/InsuranceProfile"));
 const WriteReview = lazy(() => import("@/pages/WriteReview"));
 const About = lazy(() => import("@/pages/About"));
+const TrafficSignals = lazy(() => import("@/pages/TrafficSignals"));
 const Categories = lazy(() => import("@/pages/Categories"));
 const SearchPage = lazy(() => import("@/pages/Search"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
@@ -60,6 +61,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/about" component={About} />
+        <Route path="/trust-signals" component={TrafficSignals} />
         <Route path="/categories" component={Categories} />
         <Route path="/search" component={SearchPage} />
         <Route path="/privacy" component={Privacy} />

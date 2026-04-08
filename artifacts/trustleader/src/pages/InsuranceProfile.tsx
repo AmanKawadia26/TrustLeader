@@ -107,7 +107,7 @@ export default function InsuranceProfile() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-[hsl(var(--brand-forest))] mb-2">Partner businesses</h2>
           <p className="text-muted-foreground mb-8">
-            Companies listed with this insurer on TrustLeader.
+            Companies listed with this insurer on My Protector.
           </p>
 
           {businessesLoading ? (

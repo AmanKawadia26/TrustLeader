@@ -35,6 +35,10 @@
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 
+  --color-brand-navy: hsl(var(--brand-navy));
+  --color-brand-royal: hsl(var(--brand-royal));
+  --color-brand-turquoise: hsl(var(--brand-turquoise));
+
   --font-sans: 'Inter', sans-serif;
   --font-display: 'Inter', sans-serif;
   --font-serif: 'Merriweather', Georgia, 'Times New Roman', serif;
@@ -48,39 +52,42 @@
 }
 
 :root {
-  /* Brand: neutral primary + gold accent (shield logo); avoid dominant green */
-  --brand-forest: 222 47% 11%;
-  --brand-gold: 43 72% 48%;
-  --brand-cream: 40 38% 97%;
-  --brand-sand: 38 42% 92%;
+  /* My Protector: royal blue, turquoise, navy — legacy aliases kept for existing classnames */
+  --brand-navy: 222 47% 16%;
+  --brand-royal: 221 83% 53%;
+  --brand-turquoise: 173 72% 38%;
+  --brand-forest: 222 47% 16%;
+  --brand-gold: 173 72% 38%;
+  --brand-cream: 210 40% 99%;
+  --brand-sand: 210 35% 96%;
 
-  --background: 40 38% 97%;
-  --foreground: 222 47% 11%;
+  --background: 210 40% 99%;
+  --foreground: 222 47% 14%;
   
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 222 47% 14%;
   
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover-foreground: 222 47% 14%;
   
-  --primary: 222 47% 11%;
-  --primary-foreground: 40 38% 97%;
+  --primary: 221 83% 48%;
+  --primary-foreground: 210 40% 99%;
   
   --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
+  --secondary-foreground: 222 47% 16%;
   
-  --muted: 38 30% 94%;
-  --muted-foreground: 215 16% 40%;
+  --muted: 210 35% 96%;
+  --muted-foreground: 215 16% 38%;
   
-  --accent: 38 42% 92%;
-  --accent-foreground: 222 47% 11%;
+  --accent: 190 45% 94%;
+  --accent-foreground: 222 47% 16%;
   
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 222 12% 36%;
+  --border: 214 28% 88%;
+  --input: 214 28% 88%;
+  --ring: 221 83% 53%;
 
   --radius: 0.75rem;
 
@@ -92,41 +99,45 @@
 }
 
 .dark {
-  --background: 222 47% 11%;
+  --background: 222 44% 9%;
   --foreground: 210 40% 98%;
   
-  --card: 222 47% 11%;
+  --card: 222 40% 12%;
   --card-foreground: 210 40% 98%;
   
-  --popover: 222 47% 11%;
+  --popover: 222 40% 12%;
   --popover-foreground: 210 40% 98%;
   
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
+  --primary: 221 83% 58%;
+  --primary-foreground: 222 47% 10%;
   
-  --secondary: 217.2 32.6% 17.5%;
+  --secondary: 217 32% 18%;
   --secondary-foreground: 210 40% 98%;
   
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
+  --muted: 217 32% 18%;
+  --muted-foreground: 215 20% 68%;
   
-  --accent: 217.2 32.6% 17.5%;
+  --accent: 217 32% 20%;
   --accent-foreground: 210 40% 98%;
   
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
   
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  --border: 217 28% 18%;
+  --input: 217 28% 18%;
+  --ring: 190 90% 50%;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+  html {
+    overflow-x: clip;
+  }
   body {
     @apply bg-background text-foreground antialiased font-sans;
+    overflow-x: clip;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-bold tracking-tight;
@@ -149,11 +160,11 @@
   .tl-hero-bg {
     background: linear-gradient(
       120deg,
-      hsl(210 42% 92%),
-      hsl(200 48% 91%),
-      hsl(330 42% 93%),
-      hsl(38 46% 92%),
-      hsl(210 42% 92%)
+      hsl(210 42% 96%),
+      hsl(190 48% 94%),
+      hsl(200 45% 95%),
+      hsl(221 40% 95%),
+      hsl(210 42% 96%)
     );
     background-size: 400% 400%;
     animation: tl-hero-shift 18s ease infinite;
@@ -177,6 +188,16 @@
     @apply bg-slate-900/70 backdrop-blur-md border border-slate-800/50 shadow-xl;
   }
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-500;
+  }
+
+  .hrs-neon-glow-green {
+    filter: drop-shadow(0 0 4px rgb(52 245 194 / 0.75)) drop-shadow(0 0 10px rgb(16 185 129 / 0.35));
+  }
+  .hrs-neon-glow-orange {
+    filter: drop-shadow(0 0 4px rgb(255 176 32 / 0.8)) drop-shadow(0 0 10px rgb(249 115 22 / 0.35));
+  }
+  .hrs-neon-glow-red {
+    filter: drop-shadow(0 0 4px rgb(255 107 107 / 0.8)) drop-shadow(0 0 10px rgb(239 68 68 / 0.35));
   }
 }

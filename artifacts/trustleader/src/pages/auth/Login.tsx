@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from "react-i18next";
-import { Shield } from "lucide-react";
 
 export default function Login() {
   const { t } = useTranslation();
+  const logoSrc = `${import.meta.env.BASE_URL}my-protector-logo.png`;
   const [, setLocation] = useLocation();
   const { login } = useAuth();
   
@@ -31,12 +31,18 @@ export default function Login() {
     <Layout>
       <div className="min-h-[80vh] flex flex-col justify-center items-center px-4 py-12 bg-[hsl(var(--brand-cream))]">
         <div className="w-full max-w-md bg-card border border-border/60 rounded-3xl p-8 sm:p-10 shadow-xl">
-          <div className="flex justify-center mb-4">
-            <div className="bg-[hsl(var(--brand-forest))]/10 p-3 rounded-2xl">
-              <Shield className="w-8 h-8 text-[hsl(var(--brand-forest))]" />
-            </div>
+          <div className="flex flex-col items-center gap-2 mb-4">
+            <img
+              src={logoSrc}
+              alt=""
+              width={332}
+              height={290}
+              className="h-16 w-16 sm:h-20 sm:w-20 object-contain"
+              decoding="async"
+            />
+            <span className="font-bold text-[hsl(var(--brand-navy))] text-xl tracking-tight">My Protector</span>
           </div>
-          <p className="text-center text-sm text-muted-foreground mb-2">Log in to your TrustLeader account</p>
+          <p className="text-center text-sm text-muted-foreground mb-2">{t("auth.login.subtitle")}</p>
           <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-center text-[hsl(var(--brand-forest))] mb-8">{t('auth.login.title')}</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">

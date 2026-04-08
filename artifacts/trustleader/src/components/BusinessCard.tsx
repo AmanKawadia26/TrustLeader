@@ -53,7 +53,7 @@ export function BusinessCard({ business }: { business: Business }) {
                   <TooltipTrigger asChild>
                     <Link
                       href={`/insurance/${business.insurance.slug}`}
-                      className="flex min-w-0 max-w-full items-center gap-1.5 text-xs font-semibold text-[hsl(var(--brand-gold))] hover:underline"
+                      className="flex min-w-0 max-w-full items-center gap-1.5 text-xs font-semibold text-[hsl(var(--brand-turquoise))] hover:underline"
                       title={business.insurance.name}
                     >
                       <ShieldCheck className="w-4 h-4 shrink-0" />

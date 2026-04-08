@@ -18,8 +18,10 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors ${
-        active ? "bg-white/15 text-white" : "text-white/90 hover:bg-white/10"
+      className={`text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-lg transition-colors whitespace-nowrap ${
+        active
+          ? "bg-[hsl(var(--brand-royal))]/12 text-[hsl(var(--brand-navy))]"
+          : "text-[hsl(var(--brand-navy))]/90 hover:bg-[hsl(var(--brand-turquoise))]/10 hover:text-[hsl(var(--brand-navy))]"
       }`}
     >
       {children}
@@ -38,66 +40,75 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return "/dashboard/consumer";
   };
 
+  const logoSrc = `${import.meta.env.BASE_URL}my-protector-logo.png`;
+
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-background text-foreground">
-      <header className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-black text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="min-h-screen flex min-w-0 flex-col overflow-x-clip font-sans bg-background text-foreground">
+      <header className="sticky top-0 z-50 w-full max-w-full overflow-visible border-b border-border/80 bg-white/95 backdrop-blur-md text-[hsl(var(--brand-navy))] shadow-sm">
+        <div className="max-w-7xl mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 py-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-3">
           <Link
             href="/"
-            className="flex items-center shrink-0 min-w-0 rounded-lg pr-1 -ml-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
-            title="TrustLeader"
+            className="order-1 shrink-0 flex items-center gap-2 rounded-lg -ml-1 pr-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-royal))]/50 min-w-0"
+            title="My Protector"
           >
             <img
-              src={`${import.meta.env.BASE_URL}logo-on-dark.svg`}
-              alt="TrustLeader"
-              width={175}
-              height={36}
-              className="h-8 w-auto sm:h-9 object-contain object-left"
+              src={logoSrc}
+              alt=""
+              width={332}
+              height={290}
+              className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 object-contain"
               decoding="async"
             />
+            <span className="font-bold text-[hsl(var(--brand-navy))] text-base sm:text-lg tracking-tight truncate">
+              My Protector
+            </span>
           </Link>
 
-          <div className="order-last sm:order-none w-full sm:w-auto sm:flex-1 sm:max-w-md sm:mx-4">
-            <Link
-              href="/search"
-              className="flex w-full items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm text-neutral-500 shadow-sm border border-neutral-200 hover:border-neutral-300 transition-colors"
-            >
-              <Search className="w-4 h-4 shrink-0 text-neutral-400" />
-              <span className="truncate">{t("nav.searchPlaceholder")}</span>
-            </Link>
-          </div>
+          <div className="order-2 flex w-full min-w-0 flex-col gap-3 lg:flex-1 lg:flex-row lg:items-center lg:gap-3">
+            <div className="order-3 w-full min-w-0 lg:order-none lg:max-w-md lg:flex-shrink-0">
+              <Link
+                href="/search"
+                className="flex w-full min-w-0 items-center gap-1.5 sm:gap-2 rounded-full bg-[hsl(var(--brand-cream))] px-2.5 sm:px-3 py-2 sm:py-2.5 text-sm text-muted-foreground shadow-inner border border-border/80 hover:border-[hsl(var(--brand-royal))]/35 transition-colors"
+              >
+                <Search className="w-4 h-4 shrink-0 text-[hsl(var(--brand-royal))]/70" />
+                <span className="truncate">{t("nav.searchPlaceholder")}</span>
+              </Link>
+            </div>
 
-          <nav className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto [scrollbar-width:none] order-3 sm:order-none">
-            <NavLink href="/categories">{t("nav.categories")}</NavLink>
-            <NavLink href="/about">{t("nav.about")}</NavLink>
-            <NavLink href="/search">{t("nav.writeReview")}</NavLink>
-          </nav>
+            <div className="order-2 flex w-full min-w-0 flex-wrap items-center justify-center gap-x-1 gap-y-2 sm:justify-start lg:order-none lg:flex-1 lg:flex-nowrap lg:justify-start lg:gap-x-2 lg:py-0.5 lg:min-w-0">
+            <nav className="flex flex-wrap items-center justify-center gap-x-0.5 gap-y-1 sm:gap-x-1 sm:justify-start lg:flex-nowrap">
+              <NavLink href="/categories">{t("nav.categories")}</NavLink>
+              <NavLink href="/trust-signals">{t("nav.trafficSignals")}</NavLink>
+              <NavLink href="/about">{t("nav.about")}</NavLink>
+              <NavLink href="/search">{t("nav.writeReview")}</NavLink>
+            </nav>
 
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 border-l border-border/70 pl-2 sm:pl-3 ml-0.5">
             {!isAuthenticated ? (
               <>
                 <Link href="/auth/login">
-                  <Button variant="ghost" className="text-white hover:bg-white/10 hover:text-white hidden sm:inline-flex">
+                  <Button
+                    variant="ghost"
+                    className="text-[hsl(var(--brand-navy))] hover:bg-[hsl(var(--brand-turquoise))]/12 hover:text-[hsl(var(--brand-navy))] whitespace-nowrap px-1.5 sm:px-2 h-8 sm:h-9 text-xs sm:text-sm"
+                  >
                     {t("nav.login")}
                   </Button>
                 </Link>
                 <Link href="/auth/register/business">
-                  <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm px-3 sm:px-4 font-semibold">
+                  <Button className="rounded-full bg-[hsl(var(--brand-royal))] hover:bg-[hsl(var(--brand-royal))]/90 text-white text-xs sm:text-sm px-2 sm:px-3 font-semibold shadow-sm whitespace-nowrap h-8 sm:h-9">
                     {t("nav.forBusinesses")}
-                  </Button>
-                </Link>
-                <Link href="/auth/register">
-                  <Button className="rounded-full bg-white text-neutral-900 hover:bg-neutral-100 text-xs sm:text-sm px-3 sm:px-4 font-semibold">
-                    {t("nav.register")}
                   </Button>
                 </Link>
               </>
             ) : user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-white/20 text-white hover:bg-white/10">
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full border border-border text-[hsl(var(--brand-navy))] hover:bg-[hsl(var(--brand-turquoise))]/12"
+                  >
                     <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-white/10 text-white font-semibold">
+                      <AvatarFallback className="bg-[hsl(var(--brand-royal))]/12 text-[hsl(var(--brand-navy))] font-semibold">
                         {user.email.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -119,86 +130,94 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : null}
+            </div>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 min-w-0 overflow-visible">{children}</main>
 
-      <footer className="bg-black text-white mt-auto border-t border-neutral-800">
+      <footer className="bg-[hsl(var(--brand-cream))] text-[hsl(var(--brand-navy))] mt-auto border-t border-border/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-1">
-            <div className="mb-4">
+            <div className="mb-4 flex items-center gap-2 min-w-0">
               <img
-                src={`${import.meta.env.BASE_URL}logo-on-dark.svg`}
-                alt="TrustLeader"
-                width={175}
-                height={36}
-                className="h-9 w-auto object-contain object-left"
+                src={logoSrc}
+                alt=""
+                width={332}
+                height={290}
+                className="h-10 w-10 shrink-0 object-contain"
                 decoding="async"
               />
+              <span className="font-bold text-[hsl(var(--brand-navy))] text-lg truncate">My Protector</span>
             </div>
-            <p className="text-sm text-neutral-400 leading-relaxed">{t("footer.tagline")}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{t("footer.tagline")}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-3">{t("footer.forConsumers")}</p>
+            <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-3">{t("footer.forConsumers")}</p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/search" className="text-neutral-200 hover:underline">
+                <Link href="/search" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.searchReviews")}
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="text-neutral-200 hover:underline">
+                <Link href="/categories" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.browseCategories")}
                 </Link>
               </li>
               <li>
-                <Link href="/auth/register" className="text-neutral-200 hover:underline">
+                <Link href="/auth/register" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.writeReview")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/trust-signals" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                  {t("nav.trafficSignals")}
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <p className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-3">{t("footer.forBusinesses")}</p>
+            <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-3">{t("footer.forBusinesses")}</p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/dashboard/company" className="text-neutral-200 hover:underline">
+                <Link href="/dashboard/company" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.claimProfile")}
                 </Link>
               </li>
               <li>
-                <Link href="/auth/register/business" className="text-neutral-200 hover:underline">
+                <Link href="/auth/register/business" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.businessSignup")}
                 </Link>
               </li>
               <li>
-                <Link href="/developers" className="text-neutral-200 hover:underline">
+                <Link href="/developers" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.apiAccess")}
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <p className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-3">{t("footer.company")}</p>
+            <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-3">{t("footer.company")}</p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about" className="text-neutral-200 hover:underline">
+                <Link href="/about" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.aboutUs")}
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-neutral-200 hover:underline">
+                <Link href="/about" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.trustSafety")}
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-neutral-200 hover:underline">
+                <Link href="/privacy" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.privacy")}
                 </Link>
                 {" · "}
-                <Link href="/terms" className="text-neutral-200 hover:underline">
+                <Link href="/terms" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.terms")}
                 </Link>
               </li>
@@ -208,8 +227,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <CountrySelect label={t("footer.chooseCountry")} />
           </div>
         </div>
-        <div className="border-t border-neutral-800">
-          <p className="text-center text-xs text-neutral-500 py-4 px-4">{t("footer.copyright")}</p>
+        <div className="border-t border-border/60 bg-white/50">
+          <p className="text-center text-xs text-muted-foreground py-4 px-4">{t("footer.copyright")}</p>
         </div>
       </footer>
     </div>

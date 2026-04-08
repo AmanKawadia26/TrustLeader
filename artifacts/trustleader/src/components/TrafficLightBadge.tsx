@@ -1,6 +1,6 @@
 import { twMerge } from "tailwind-merge";
-import { ShieldCheck, AlertTriangle, Ban } from "lucide-react";
 import type { TrafficLight } from "@workspace/api-client-react";
+import { HrsTrafficIcon } from "@/components/HrsTrafficIcon";
 
 interface TrafficLightBadgeProps {
   status: TrafficLight;
@@ -8,12 +8,6 @@ interface TrafficLightBadgeProps {
   showLabel?: boolean;
   size?: "sm" | "md" | "lg";
 }
-
-const statusIcon = {
-  green: ShieldCheck,
-  orange: AlertTriangle,
-  red: Ban,
-} as const;
 
 export function TrafficLightBadge({
   status,
@@ -23,29 +17,28 @@ export function TrafficLightBadge({
 }: TrafficLightBadgeProps) {
   const config = {
     green: {
-      bg: "bg-green-100 dark:bg-green-950",
-      border: "border-green-200 dark:border-green-900",
-      text: "text-green-800 dark:text-green-300",
-      dot: "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]",
+      bg: "bg-emerald-50 dark:bg-emerald-950/80",
+      border: "border-emerald-200/90 dark:border-emerald-800",
+      text: "text-emerald-900 dark:text-emerald-200",
+      dot: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.75)]",
       label: "Insurance-backed: eligible protections may apply",
     },
     orange: {
-      bg: "bg-amber-100 dark:bg-amber-950",
-      border: "border-amber-200 dark:border-amber-900",
-      text: "text-amber-900 dark:text-amber-200",
+      bg: "bg-amber-50 dark:bg-amber-950/80",
+      border: "border-amber-200 dark:border-amber-800",
+      text: "text-amber-950 dark:text-amber-100",
       dot: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.75)]",
       label: "No insurer seal: proceed with caution",
     },
     red: {
-      bg: "bg-red-100 dark:bg-red-950",
+      bg: "bg-red-50 dark:bg-red-950/80",
       border: "border-red-200 dark:border-red-900",
-      text: "text-red-800 dark:text-red-300",
+      text: "text-red-900 dark:text-red-200",
       dot: "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]",
       label: "We do not recommend (below 2★ average)",
     },
   }[status];
 
-  const Icon = statusIcon[status];
   const sizeClasses = {
     sm: "px-2 py-1 text-xs gap-1.5",
     md: "px-3 py-1.5 text-sm gap-2",
@@ -59,12 +52,12 @@ export function TrafficLightBadge({
   }[size];
 
   const iconSize = {
-    sm: "h-3 w-3",
-    md: "h-3.5 w-3.5",
-    lg: "h-4 w-4",
+    sm: "sm" as const,
+    md: "md" as const,
+    lg: "lg" as const,
   }[size];
 
-  const ariaLabel = `Trust signal: ${config.label}`;
+  const ariaLabel = `Protector signal: ${status} — ${config.label}`;
 
   return (
     <div
@@ -79,7 +72,7 @@ export function TrafficLightBadge({
         className
       )}
     >
-      <Icon className={twMerge("shrink-0 opacity-90", iconSize)} aria-hidden />
+      <HrsTrafficIcon status={status} size={iconSize} className="shrink-0" />
       <div className={twMerge("rounded-full animate-pulse", config.dot, dotSize)} aria-hidden />
       {showLabel && <span>{config.label}</span>}
     </div>
