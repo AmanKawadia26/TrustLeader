@@ -12,6 +12,8 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { FaApple, FaFacebookF, FaGoogle } from "react-icons/fa";
 import { HOME_CATEGORY_LINKS } from "@/config/categories";
+import { SeoHead } from "@/components/SeoHead";
+import { ROUTES } from "@/lib/routes";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -36,6 +38,11 @@ export default function Home() {
 
   return (
     <Layout>
+      <SeoHead
+        title={t("seo.home.title")}
+        description={t("seo.home.description")}
+        canonicalPath={ROUTES.home}
+      />
       {apiDown ? (
         <div className="bg-amber-50 border-b border-amber-200 text-amber-950 px-4 py-3 text-center text-sm">
           {t("home.apiOffline")}
@@ -98,7 +105,7 @@ export default function Home() {
                 transition={{ delay: 0.15 }}
                 className="mt-8 flex justify-center px-2"
               >
-                <Link href="/write-review/b0000001-0000-4000-8000-000000000001">
+                <Link href={ROUTES.recordExperience("b0000001-0000-4000-8000-000000000001")}>
                   <span className="inline-flex rounded-full bg-gradient-to-r from-sky-200/90 via-slate-100/95 to-amber-100/90 p-[1px] shadow-sm ring-1 ring-white/40">
                     <Button
                       variant="ghost"
@@ -142,7 +149,7 @@ export default function Home() {
                 {t("home.categories.title")}
               </h2>
               <div className="flex items-center gap-2">
-                <Link href="/categories">
+                <Link href={ROUTES.browseSectors}>
                   <Button variant="outline" className="rounded-full border-blue-600 text-blue-700">
                     {t("home.categories.seemore")}
                   </Button>
@@ -166,12 +173,33 @@ export default function Home() {
       ) : null}
 
       {showDiscovery ? (
+        <section className="py-10 px-4 sm:px-6 lg:px-8 bg-white border-y border-neutral-200/80">
+          <div className="max-w-7xl mx-auto rounded-2xl border border-neutral-200/90 bg-[hsl(var(--brand-cream))]/40 px-6 py-8 sm:px-10 sm:py-10">
+            <h2 className="font-sans text-xl sm:text-2xl font-bold text-neutral-900 mb-4 text-balance">
+              {t("home.resellers.title")}
+            </h2>
+            <p className="text-neutral-700 text-base sm:text-lg leading-relaxed max-w-3xl mb-6">
+              {t("home.resellers.body")}
+            </p>
+            <Link href={ROUTES.authRegisterReseller}>
+              <Button
+                variant="outline"
+                className="rounded-full border-[hsl(var(--brand-royal))] text-[hsl(var(--brand-navy))] hover:bg-[hsl(var(--brand-turquoise))]/15 font-semibold"
+              >
+                {t("home.resellers.cta")}
+              </Button>
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
+      {showDiscovery ? (
         <section className="py-10 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto rounded-[2rem] bg-gradient-to-br from-rose-50/95 via-neutral-50 to-amber-50/40 border border-rose-100/90 px-6 py-10 sm:px-10 sm:py-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <p className="font-sans text-lg sm:text-xl font-medium text-neutral-900 max-w-2xl">
               {t("home.promo.title")}
             </p>
-            <Link href="/auth/register/business">
+            <Link href={ROUTES.authRegisterBusiness}>
               <Button className="rounded-full bg-[hsl(var(--brand-royal))] text-white hover:bg-[hsl(var(--brand-royal))]/90 px-8 h-12 font-semibold shrink-0">
                 {t("home.promo.cta")}
               </Button>
@@ -185,7 +213,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-sans text-2xl font-bold text-neutral-900">{t("home.bestIn.title")}</h2>
-              <Link href="/search" className="text-sm font-semibold text-blue-700 hover:underline">
+              <Link href={ROUTES.exploreListings} className="text-sm font-semibold text-blue-700 hover:underline">
                 {t("home.categories.seemore")}
               </Link>
             </div>
@@ -224,7 +252,7 @@ export default function Home() {
                 </h2>
                 <p className="text-neutral-700 text-lg mb-8 leading-relaxed">{t("home.cta.subtitle")}</p>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <Link href="/auth/login">
+                  <Link href={ROUTES.authLogin}>
                     <Button
                       size="lg"
                       className="rounded-full bg-[hsl(var(--brand-royal))] text-white hover:bg-[hsl(var(--brand-royal))]/90 px-8 h-12"
@@ -235,7 +263,7 @@ export default function Home() {
                   <div className="hidden sm:block h-10 w-px bg-neutral-300" aria-hidden />
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-neutral-600 sm:hidden">{t("home.cta.orContinue")}</span>
-                    <Link href="/auth/login" aria-label="Google">
+                    <Link href={ROUTES.authLogin} aria-label="Google">
                       <Button
                         type="button"
                         size="icon"
@@ -245,7 +273,7 @@ export default function Home() {
                         <FaGoogle className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Link href="/auth/login" aria-label="Facebook">
+                    <Link href={ROUTES.authLogin} aria-label="Facebook">
                       <Button
                         type="button"
                         size="icon"
@@ -255,7 +283,7 @@ export default function Home() {
                         <FaFacebookF className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Link href="/auth/login" aria-label="Apple">
+                    <Link href={ROUTES.authLogin} aria-label="Apple">
                       <Button
                         type="button"
                         size="icon"
@@ -269,8 +297,8 @@ export default function Home() {
                 </div>
                 <p className="mt-6 text-sm text-neutral-600">
                   {t("home.cta.noAccount")}{" "}
-                  <Link href="/auth/register" className="font-semibold text-blue-700 underline">
-                    {t("nav.register")}
+                  <Link href={ROUTES.authRegister} className="font-semibold text-blue-700 underline">
+                    {t("nav.createAccount")}
                   </Link>
                 </p>
               </div>
@@ -290,7 +318,7 @@ export default function Home() {
             <h2 className="font-sans font-bold text-neutral-900 text-balance break-words min-w-0 [font-size:clamp(1.375rem,3vw+0.5rem,1.875rem)] leading-tight">
               {submittedSearch ? t("home.featured.resultsFor", { q: submittedSearch }) : t("home.featured")}
             </h2>
-            <Link href="/search">
+            <Link href={ROUTES.exploreListings}>
               <Button variant="outline" className="rounded-full border-neutral-300 text-neutral-900 w-fit">
                 {t("home.categories.seemore")}
               </Button>
@@ -333,7 +361,7 @@ export default function Home() {
               <h2 className="font-sans text-3xl font-bold text-neutral-900 text-balance break-words min-w-0">{t("home.recent.title")}</h2>
               <p className="text-sm text-neutral-500 mt-1">{t("home.recent.hint")}</p>
             </div>
-            <Link href="/search">
+            <Link href={ROUTES.exploreListings}>
               <Button variant="outline" className="rounded-full border-neutral-300 text-neutral-900 w-fit shrink-0">
                 {t("home.categories.seemore")}
               </Button>

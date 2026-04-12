@@ -1,27 +1,34 @@
 import { Layout } from "@/components/Layout";
 import { useTranslation } from "react-i18next";
-
-const stats = [
-  { value: "2024", label: "Founded" },
-  { value: "2.4M+", label: "Reviews" },
-  { value: "148K", label: "Businesses" },
-  { value: "43", label: "Team members" },
-];
-
-const values = [
-  { title: "Integrity first", body: "We publish genuine feedback and enforce clear moderation standards." },
-  { title: "Full transparency", body: "Traffic-light signals and insurer disclosures are shown upfront." },
-  { title: "Fair for all", body: "Consumers and businesses both get tools to respond and verify." },
-  { title: "Community", body: "Reviews help everyone make better decisions together." },
-  { title: "Rigorous verification", body: "We combine automated checks with human review where needed." },
-  { title: "Consumer advocacy", body: "Your voice matters when something goes wrong." },
-];
+import { SeoHead } from "@/components/SeoHead";
+import { ROUTES } from "@/lib/routes";
 
 export default function About() {
   const { t } = useTranslation();
 
+  const stats = [
+    { value: t("about.stat1.value"), label: t("about.stat1.label") },
+    { value: t("about.stat2.value"), label: t("about.stat2.label") },
+    { value: t("about.stat3.value"), label: t("about.stat3.label") },
+    { value: t("about.stat4.value"), label: t("about.stat4.label") },
+  ];
+
+  const values = [
+    { title: t("about.value1.title"), body: t("about.value1.body") },
+    { title: t("about.value2.title"), body: t("about.value2.body") },
+    { title: t("about.value3.title"), body: t("about.value3.body") },
+    { title: t("about.value4.title"), body: t("about.value4.body") },
+    { title: t("about.value5.title"), body: t("about.value5.body") },
+    { title: t("about.value6.title"), body: t("about.value6.body") },
+  ];
+
   return (
     <Layout>
+      <SeoHead
+        title={t("seo.about.title")}
+        description={t("seo.about.description")}
+        canonicalPath={ROUTES.about}
+      />
       <section className="bg-gradient-to-br from-[hsl(var(--brand-navy))] via-[hsl(222_47%_20%)] to-[hsl(var(--brand-royal))] text-white py-16 md:py-24">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h1 className="font-serif text-4xl md:text-5xl font-bold mb-6">{t("about.hero.title")}</h1>

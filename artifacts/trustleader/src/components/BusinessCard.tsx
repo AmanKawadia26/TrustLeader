@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import type { Business } from "@workspace/api-client-react";
+import { useTranslation } from "react-i18next";
 import { TrafficLightBadge } from "./TrafficLightBadge";
 import { StarRating } from "./StarRating";
 import { ShieldCheck, ChevronRight } from "lucide-react";
@@ -7,6 +8,7 @@ import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function BusinessCard({ business }: { business: Business }) {
+  const { t } = useTranslation();
   const profileHref = `/business/${business.id}`;
 
   return (
@@ -36,14 +38,16 @@ export function BusinessCard({ business }: { business: Business }) {
             </div>
 
             <p className="text-sm text-muted-foreground line-clamp-2 mb-4 min-h-[40px] text-center sm:text-left">
-              {business.description || "No description provided."}
+              {business.description || t("business.cardNoBlurb")}
             </p>
           </Link>
 
           <div className="flex items-center justify-end gap-2 mb-3">
             <StarRating rating={business.average_rating || 0} size="sm" />
             <span className="text-sm font-medium">{business.average_rating?.toFixed(1) || "0.0"}</span>
-            <span className="text-sm text-muted-foreground">({business.review_count} reviews)</span>
+            <span className="text-sm text-muted-foreground">
+              ({t("business.insightCountLabel", { count: business.review_count })})
+            </span>
           </div>
 
           <div className="flex items-center gap-3 mt-auto pt-4 border-t border-neutral-200/80">
@@ -75,7 +79,7 @@ export function BusinessCard({ business }: { business: Business }) {
               href={profileHref}
               className="flex shrink-0 items-center text-sm font-medium text-primary hover:underline transition-transform group-hover:translate-x-0.5"
             >
-              View Profile <ChevronRight className="w-4 h-4 ml-1" />
+              {t("business.viewListing")} <ChevronRight className="w-4 h-4 ml-1" />
             </Link>
           </div>
         </div>

@@ -7,6 +7,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import "@/lib/i18n"; // initialize i18n
+import {
+  RedirectSearchToExplore,
+  RedirectWriteReviewToRecord,
+  RedirectCategoriesToSectors,
+} from "@/components/LegacyRedirects";
 
 const Home = lazy(() => import("@/pages/Home"));
 const BusinessProfile = lazy(() => import("@/pages/BusinessProfile"));
@@ -29,11 +34,15 @@ const AdminLogin = lazy(() => import("@/pages/auth/AdminLogin"));
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ component: Component, allowedRoles }: { component: any, allowedRoles?: string[] }) {
+function ProtectedRoute({ component: Component, allowedRoles }: { component: any; allowedRoles?: string[] }) {
   const { isAuthenticated, user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -59,40 +68,46 @@ function Router() {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Switch>
+        {/* Legacy URL redirects (preserve query strings where applicable) */}
+        <Route path="/search" component={RedirectSearchToExplore} />
+        <Route path="/categories" component={RedirectCategoriesToSectors} />
+        <Route path="/write-review/:businessId" component={RedirectWriteReviewToRecord} />
+
         <Route path="/" component={Home} />
         <Route path="/about" component={About} />
         <Route path="/trust-signals" component={TrafficSignals} />
-        <Route path="/categories" component={Categories} />
-        <Route path="/search" component={SearchPage} />
+        <Route path="/browse-sectors" component={Categories} />
+        <Route path="/explore-listings" component={SearchPage} />
         <Route path="/privacy" component={Privacy} />
         <Route path="/terms" component={Terms} />
         <Route path="/developers" component={Developers} />
         <Route path="/business/:id" component={BusinessProfile} />
         <Route path="/insurance/:slug" component={InsuranceProfile} />
-        
+
         {/* Auth routes */}
         <Route path="/auth/login" component={Login} />
         <Route path="/auth/admin" component={AdminLogin} />
         <Route path="/auth/register/business" component={Register} />
+        <Route path="/auth/register/reseller" component={Register} />
         <Route path="/auth/register" component={Register} />
-        
+
         {/* Protected action routes */}
-        <Route path="/write-review/:businessId">
+        <Route path="/record-experience/:businessId">
           {() => <ProtectedRoute component={WriteReview} />}
         </Route>
-        
+
         {/* Dashboards */}
         <Route path="/dashboard/company">
-          {() => <ProtectedRoute component={CompanyDashboard} allowedRoles={['company']} />}
+          {() => <ProtectedRoute component={CompanyDashboard} allowedRoles={["company"]} />}
         </Route>
         <Route path="/dashboard/consumer">
-          {() => <ProtectedRoute component={ConsumerDashboard} allowedRoles={['consumer']} />}
+          {() => <ProtectedRoute component={ConsumerDashboard} allowedRoles={["consumer"]} />}
         </Route>
         <Route path="/dashboard/reseller">
-          {() => <ProtectedRoute component={ResellerDashboard} allowedRoles={['reseller']} />}
+          {() => <ProtectedRoute component={ResellerDashboard} allowedRoles={["reseller"]} />}
         </Route>
         <Route path="/dashboard/admin">
-          {() => <ProtectedRoute component={AdminDashboard} allowedRoles={['admin']} />}
+          {() => <ProtectedRoute component={AdminDashboard} allowedRoles={["admin"]} />}
         </Route>
 
         <Route component={NotFound} />

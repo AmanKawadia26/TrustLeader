@@ -9,6 +9,8 @@ import { ReviewCard } from "@/components/ReviewCard";
 import { Button } from "@/components/ui/button";
 import { Loader2, ExternalLink, PenLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SeoHead } from "@/components/SeoHead";
+import { ROUTES } from "@/lib/routes";
 
 export default function BusinessProfile() {
   const { id } = useParams<{ id: string }>();
@@ -17,16 +19,31 @@ export default function BusinessProfile() {
   const { data: business, isLoading: businessLoading, error } = useBusinessQuery(id);
   const { data: reviewsData, isLoading: reviewsLoading } = useBusinessReviewsQuery(id, { limit: 20 });
 
-  if (businessLoading) return (
-    <Layout><div className="flex h-[60vh] items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div></Layout>
-  );
+  if (businessLoading)
+    return (
+      <Layout>
+        <div className="flex h-[60vh] items-center justify-center">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
 
-  if (error || !business) return (
-    <Layout><div className="flex h-[60vh] items-center justify-center text-destructive">Failed to load business profile.</div></Layout>
-  );
+  if (error || !business)
+    return (
+      <Layout>
+        <div className="flex h-[60vh] items-center justify-center text-destructive">{t("business.loadFailure")}</div>
+      </Layout>
+    );
+
+  const pageTitle = `${business.name} | My Protector`;
 
   return (
     <Layout>
+      <SeoHead
+        title={pageTitle}
+        description={t("seo.record.description")}
+        canonicalPath={`/business/${business.id}`}
+      />
       <div className="bg-[hsl(var(--brand-cream))] border-b border-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
@@ -37,8 +54,15 @@ export default function BusinessProfile() {
                   {business.listing_source.replace(/_/g, " ")}
                 </span>
               </div>
-              <h1 className="font-serif text-4xl font-bold tracking-tight text-[hsl(var(--brand-forest))] mb-2">{business.name}</h1>
-              <a href={`https://${business.domain}`} target="_blank" rel="noreferrer" className="inline-flex items-center text-lg text-primary hover:underline mb-6">
+              <h1 className="font-serif text-4xl font-bold tracking-tight text-[hsl(var(--brand-navy))] mb-2">
+                {business.name}
+              </h1>
+              <a
+                href={`https://${business.domain}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center text-lg text-primary hover:underline mb-6"
+              >
                 {business.domain} <ExternalLink className="w-4 h-4 ml-1.5" />
               </a>
             </div>
@@ -52,14 +76,19 @@ export default function BusinessProfile() {
                 <div className="w-px h-10 bg-border mx-2" />
                 <div className="flex flex-col items-center lg:items-end">
                   <span className="text-3xl font-bold">{business.review_count}</span>
-                  <span className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Reviews</span>
+                  <span className="text-sm text-muted-foreground font-medium uppercase tracking-wide">
+                    {t("business.insightStatShort")}
+                  </span>
                 </div>
               </div>
 
-              <Link href={`/write-review/${business.id}`} className="w-full lg:w-auto">
-                <Button size="lg" className="w-full lg:w-auto text-lg h-14 rounded-xl shadow-lg shadow-primary/25 hover:-translate-y-0.5 transition-transform">
+              <Link href={ROUTES.recordExperience(business.id)} className="w-full lg:w-auto">
+                <Button
+                  size="lg"
+                  className="w-full lg:w-auto text-lg h-14 rounded-xl shadow-lg shadow-primary/25 hover:-translate-y-0.5 transition-transform bg-[hsl(var(--brand-royal))] hover:bg-[hsl(var(--brand-royal))]/90 text-white"
+                >
                   <PenLine className="w-5 h-5 mr-2" />
-                  {t("business.writeReview")}
+                  {t("business.publishInsight")}
                 </Button>
               </Link>
             </div>
@@ -74,10 +103,12 @@ export default function BusinessProfile() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold mb-8">{t("business.reviews")}</h2>
+        <h2 className="text-2xl font-bold mb-8 text-[hsl(var(--brand-navy))]">{t("business.insights")}</h2>
 
         {reviewsLoading ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
         ) : reviewsData?.reviews?.length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {reviewsData.reviews.map((review) => (
@@ -86,10 +117,12 @@ export default function BusinessProfile() {
           </div>
         ) : (
           <div className="text-center py-16 bg-muted/20 rounded-2xl border border-dashed">
-            <h3 className="text-lg font-medium text-foreground mb-2">No reviews yet.</h3>
-            <p className="text-muted-foreground mb-6">Be the first to share your experience with {business.name}.</p>
-            <Link href={`/write-review/${business.id}`}>
-              <Button variant="outline">Write a Review</Button>
+            <h3 className="text-lg font-medium text-foreground mb-2">{t("business.noInsightPrompt", { name: business.name })}</h3>
+            <p className="text-muted-foreground mb-6">{t("explore.cta.body")}</p>
+            <Link href={ROUTES.recordExperience(business.id)}>
+              <Button variant="outline" className="border-[hsl(var(--brand-royal))] text-[hsl(var(--brand-navy))]">
+                {t("business.openInsightForm")}
+              </Button>
             </Link>
           </div>
         )}

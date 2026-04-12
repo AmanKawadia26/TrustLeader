@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ROUTES } from "@/lib/routes";
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   const [loc] = useLocation();
@@ -67,7 +68,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="order-2 flex w-full min-w-0 flex-col gap-3 lg:flex-1 lg:flex-row lg:items-center lg:gap-3">
             <div className="order-3 w-full min-w-0 lg:order-none lg:max-w-md lg:flex-shrink-0">
               <Link
-                href="/search"
+                href={ROUTES.exploreListings}
                 className="flex w-full min-w-0 items-center gap-1.5 sm:gap-2 rounded-full bg-[hsl(var(--brand-cream))] px-2.5 sm:px-3 py-2 sm:py-2.5 text-sm text-muted-foreground shadow-inner border border-border/80 hover:border-[hsl(var(--brand-royal))]/35 transition-colors"
               >
                 <Search className="w-4 h-4 shrink-0 text-[hsl(var(--brand-royal))]/70" />
@@ -77,16 +78,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             <div className="order-2 flex w-full min-w-0 flex-wrap items-center justify-center gap-x-1 gap-y-2 sm:justify-start lg:order-none lg:flex-1 lg:flex-nowrap lg:justify-start lg:gap-x-2 lg:py-0.5 lg:min-w-0">
             <nav className="flex flex-wrap items-center justify-center gap-x-0.5 gap-y-1 sm:gap-x-1 sm:justify-start lg:flex-nowrap">
-              <NavLink href="/categories">{t("nav.categories")}</NavLink>
-              <NavLink href="/trust-signals">{t("nav.trafficSignals")}</NavLink>
-              <NavLink href="/about">{t("nav.about")}</NavLink>
-              <NavLink href="/search">{t("nav.writeReview")}</NavLink>
+              <NavLink href={ROUTES.browseSectors}>{t("nav.browseSectors")}</NavLink>
+              <NavLink href={ROUTES.trustSignals}>{t("nav.trafficSignals")}</NavLink>
+              <NavLink href={ROUTES.exploreListings}>{t("nav.documentVisit")}</NavLink>
             </nav>
 
-            <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 border-l border-border/70 pl-2 sm:pl-3 ml-0.5">
+            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 shrink-0 border-l border-border/70 pl-2 sm:pl-3 ml-0.5">
             {!isAuthenticated ? (
               <>
-                <Link href="/auth/login">
+                <Link href={ROUTES.authLogin}>
                   <Button
                     variant="ghost"
                     className="text-[hsl(var(--brand-navy))] hover:bg-[hsl(var(--brand-turquoise))]/12 hover:text-[hsl(var(--brand-navy))] whitespace-nowrap px-1.5 sm:px-2 h-8 sm:h-9 text-xs sm:text-sm"
@@ -94,9 +94,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     {t("nav.login")}
                   </Button>
                 </Link>
-                <Link href="/auth/register/business">
+                <Link href={ROUTES.authRegisterReseller}>
+                  <Button
+                    variant="outline"
+                    className="rounded-full border-border/80 text-[hsl(var(--brand-navy))] hover:bg-[hsl(var(--brand-turquoise))]/12 whitespace-nowrap px-2 sm:px-2.5 h-8 sm:h-9 text-xs sm:text-sm"
+                  >
+                    {t("nav.resellers")}
+                  </Button>
+                </Link>
+                <Link href={ROUTES.authRegisterBusiness}>
                   <Button className="rounded-full bg-[hsl(var(--brand-royal))] hover:bg-[hsl(var(--brand-royal))]/90 text-white text-xs sm:text-sm px-2 sm:px-3 font-semibold shadow-sm whitespace-nowrap h-8 sm:h-9">
-                    {t("nav.forBusinesses")}
+                    {t("nav.merchantAccounts")}
                   </Button>
                 </Link>
               </>
@@ -158,22 +166,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-3">{t("footer.forConsumers")}</p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/search" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
-                  {t("footer.searchReviews")}
+                <Link href={ROUTES.exploreListings} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                  {t("footer.exploreListings")}
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
-                  {t("footer.browseCategories")}
+                <Link href={ROUTES.browseSectors} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                  {t("footer.browseSectors")}
                 </Link>
               </li>
               <li>
-                <Link href="/auth/register" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
-                  {t("footer.writeReview")}
+                <Link href={ROUTES.authRegister} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                  {t("footer.publishInsight")}
                 </Link>
               </li>
               <li>
-                <Link href="/trust-signals" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                <Link href={ROUTES.trustSignals} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("nav.trafficSignals")}
                 </Link>
               </li>
@@ -188,12 +196,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               </li>
               <li>
-                <Link href="/auth/register/business" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
-                  {t("footer.businessSignup")}
+                <Link href={ROUTES.authRegisterBusiness} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                  {t("footer.merchantOnboarding")}
                 </Link>
               </li>
               <li>
-                <Link href="/developers" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                <Link href={ROUTES.developers} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.apiAccess")}
                 </Link>
               </li>
@@ -203,21 +211,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-3">{t("footer.company")}</p>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                <Link href={ROUTES.about} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.aboutUs")}
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                <Link href={ROUTES.about} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.trustSafety")}
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                <Link href={ROUTES.privacy} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.privacy")}
                 </Link>
                 {" · "}
-                <Link href="/terms" className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
+                <Link href={ROUTES.terms} className="text-[hsl(var(--brand-navy))]/90 hover:text-[hsl(var(--brand-turquoise))] hover:underline">
                   {t("footer.terms")}
                 </Link>
               </li>

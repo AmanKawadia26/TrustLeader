@@ -56,6 +56,7 @@
   --brand-navy: 222 47% 16%;
   --brand-royal: 221 83% 53%;
   --brand-turquoise: 173 72% 38%;
+  /* Legacy alias: same as navy — prefer brand-navy / brand-royal for headings and CTAs */
   --brand-forest: 222 47% 16%;
   --brand-gold: 173 72% 38%;
   --brand-cream: 210 40% 99%;

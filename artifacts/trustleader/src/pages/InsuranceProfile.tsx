@@ -1,21 +1,36 @@
 import { useParams, Link } from "wouter";
 import { Layout } from "@/components/Layout";
 import { BusinessCard } from "@/components/BusinessCard";
-import { useGetInsuranceCompany, useListInsuranceCompanyBusinesses } from "@workspace/api-client-react";
+import {
+  useGetInsuranceCompany,
+  useListInsuranceCompanyBusinesses,
+  getGetInsuranceCompanyQueryKey,
+  getListInsuranceCompanyBusinessesQueryKey,
+} from "@workspace/api-client-react";
 import { Loader2, ExternalLink, Building2, MessageSquare, Star } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function InsuranceProfile() {
   const { slug } = useParams<{ slug: string }>();
 
+  const listParams = { page: 1, limit: 24 } as const;
+
   const { data, isLoading, error } = useGetInsuranceCompany(slug ?? "", {
-    query: { enabled: !!slug },
+    query: {
+      enabled: !!slug,
+      queryKey: getGetInsuranceCompanyQueryKey(slug ?? ""),
+    },
   });
 
   const { data: businessesData, isLoading: businessesLoading } = useListInsuranceCompanyBusinesses(
     slug ?? "",
-    { page: 1, limit: 24 },
-    { query: { enabled: !!slug } },
+    listParams,
+    {
+      query: {
+        enabled: !!slug,
+        queryKey: getListInsuranceCompanyBusinessesQueryKey(slug ?? "", listParams),
+      },
+    },
   );
 
   if (!slug) {
@@ -55,7 +70,7 @@ export default function InsuranceProfile() {
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Insurance partner
           </p>
-          <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight text-[hsl(var(--brand-forest))] mb-4">
+          <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight text-[hsl(var(--brand-navy))] mb-4">
             {insurance.name}
           </h1>
           {insurance.description ? (
@@ -78,7 +93,7 @@ export default function InsuranceProfile() {
                 <Building2 className="w-4 h-4" />
                 Partner businesses
               </div>
-              <p className="text-3xl font-bold text-[hsl(var(--brand-forest))]">{stats.partner_businesses}</p>
+              <p className="text-3xl font-bold text-[hsl(var(--brand-navy))]">{stats.partner_businesses}</p>
               <p className="text-xs text-muted-foreground mt-1">Active listings with verified insurance proof</p>
             </div>
             <div className="rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm">
@@ -86,7 +101,7 @@ export default function InsuranceProfile() {
                 <MessageSquare className="w-4 h-4" />
                 Total reviews
               </div>
-              <p className="text-3xl font-bold text-[hsl(var(--brand-forest))]">{stats.total_reviews}</p>
+              <p className="text-3xl font-bold text-[hsl(var(--brand-navy))]">{stats.total_reviews}</p>
               <p className="text-xs text-muted-foreground mt-1">Approved reviews across partner businesses</p>
             </div>
             <div className="rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm">
@@ -94,7 +109,7 @@ export default function InsuranceProfile() {
                 <Star className="w-4 h-4" />
                 Average rating
               </div>
-              <p className="text-3xl font-bold text-[hsl(var(--brand-forest))]">
+              <p className="text-3xl font-bold text-[hsl(var(--brand-navy))]">
                 {stats.average_rating != null ? stats.average_rating.toFixed(1) : "—"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">From approved reviews (no claim data tracked)</p>
@@ -105,14 +120,14 @@ export default function InsuranceProfile() {
 
       <section className="py-12 md:py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-[hsl(var(--brand-forest))] mb-2">Partner businesses</h2>
+          <h2 className="text-2xl font-bold text-[hsl(var(--brand-navy))] mb-2">Partner businesses</h2>
           <p className="text-muted-foreground mb-8">
             Companies listed with this insurer on My Protector.
           </p>
 
           {businessesLoading ? (
             <div className="flex justify-center py-24">
-              <Loader2 className="w-10 h-10 animate-spin text-[hsl(var(--brand-forest))]" />
+              <Loader2 className="w-10 h-10 animate-spin text-[hsl(var(--brand-navy))]" />
             </div>
           ) : businessesData?.businesses?.length ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -130,7 +145,7 @@ export default function InsuranceProfile() {
           ) : (
             <div className="text-center py-16 rounded-2xl border border-dashed border-border/80 bg-muted/20">
               <p className="text-muted-foreground">No partner businesses listed yet.</p>
-              <Link href="/search" className="inline-block mt-4 text-primary font-medium hover:underline">
+              <Link href="/explore-listings" className="inline-block mt-4 text-primary font-medium hover:underline">
                 Browse all businesses
               </Link>
             </div>

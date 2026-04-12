@@ -78,6 +78,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "i18next": "^25.10.10",
-    "react-i18next": "^16.6.6"
+    "react-helmet-async": "^2.0.5",
+    "react-i18next": "^16.6.6",
+    "zustand": "^5.0.3"
   }
 }

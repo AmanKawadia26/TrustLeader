@@ -1,7 +1,7 @@
 /**
  * Single source of truth for marketing category chips and the browse grid.
  * API-driven categories are not available yet; add new entries here to show
- * them on Home (when `homeChip` is set) and on /categories.
+ * them on Home (when `homeChip` is set) and on /browse-sectors.
  */
 import type { LucideIcon } from "lucide-react";
 import {
@@ -26,7 +26,7 @@ import {
 export type CategoryEntry = {
   /** Stable id for keys */
   id: string;
-  /** Title on /categories */
+  /** Title on /browse-sectors */
   browseName: string;
   /** `q` param for search links */
   searchQuery: string;
@@ -153,5 +153,5 @@ export const CATEGORIES: CategoryEntry[] = [
 export const HOME_CATEGORY_LINKS = CATEGORIES.filter((c) => c.homeChip).map((c) => ({
   icon: c.homeChip!.icon,
   labelKey: c.homeChip!.labelKey,
-  href: `/search?q=${encodeURIComponent(c.searchQuery)}`,
+  href: `/explore-listings?q=${encodeURIComponent(c.searchQuery)}`,
 }));

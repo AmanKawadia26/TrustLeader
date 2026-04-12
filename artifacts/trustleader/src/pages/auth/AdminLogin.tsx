@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from "react-i18next";
 import { Shield } from "lucide-react";
+import { SeoHead } from "@/components/SeoHead";
+import { ROUTES } from "@/lib/routes";
 
 export default function AdminLogin() {
   const { t } = useTranslation();
@@ -36,17 +38,23 @@ export default function AdminLogin() {
 
   return (
     <Layout>
+      <SeoHead
+        title="Administrator sign-in | My Protector"
+        description="Internal administrator authentication for My Protector."
+        canonicalPath="/auth/admin"
+        noindex
+      />
       <div className="min-h-[80vh] flex flex-col justify-center items-center px-4 py-12 bg-[hsl(var(--brand-cream))]">
         <div className="w-full max-w-md bg-card border border-border/60 rounded-3xl p-8 sm:p-10 shadow-xl">
           <div className="flex justify-center mb-4">
-            <div className="bg-[hsl(var(--brand-forest))]/10 p-3 rounded-2xl">
-              <Shield className="w-8 h-8 text-[hsl(var(--brand-forest))]" />
+            <div className="bg-[hsl(var(--brand-navy))]/10 p-3 rounded-2xl">
+              <Shield className="w-8 h-8 text-[hsl(var(--brand-navy))]" />
             </div>
           </div>
           <p className="text-center text-sm text-muted-foreground mb-2">
             Administrator access
           </p>
-          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-center text-[hsl(var(--brand-forest))] mb-8">
+          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-center text-[hsl(var(--brand-navy))] mb-8">
             {t("auth.login.title")}
           </h1>
 
@@ -80,14 +88,14 @@ export default function AdminLogin() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-base rounded-xl font-semibold bg-[hsl(var(--brand-forest))] hover:bg-[hsl(var(--brand-forest))]/90 text-[hsl(var(--brand-cream))]"
+              className="w-full h-12 text-base rounded-xl font-semibold bg-[hsl(var(--brand-navy))] hover:bg-[hsl(var(--brand-navy))]/90 text-[hsl(var(--brand-cream))]"
             >
               {t("auth.login.submit")}
             </Button>
           </form>
 
           <p className="text-center mt-8 text-sm text-muted-foreground">
-            <Link href="/auth/login" className="text-[hsl(var(--brand-forest))] font-medium hover:underline">
+            <Link href={ROUTES.authLogin} className="text-[hsl(var(--brand-royal))] font-medium hover:underline">
               Standard sign in
             </Link>
           </p>

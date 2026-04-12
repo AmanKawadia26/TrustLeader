@@ -1,12 +1,19 @@
 import { Layout } from "@/components/Layout";
 import { HrsTrafficIcon } from "@/components/HrsTrafficIcon";
 import { useTranslation } from "react-i18next";
+import { SeoHead } from "@/components/SeoHead";
+import { ROUTES } from "@/lib/routes";
 
 export default function TrafficSignals() {
   const { t } = useTranslation();
 
   return (
     <Layout>
+      <SeoHead
+        title={t("seo.traffic.title")}
+        description={t("seo.traffic.description")}
+        canonicalPath={ROUTES.trustSignals}
+      />
       <section className="border-b border-border/70 bg-[hsl(var(--brand-cream))]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 text-center">
           <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[hsl(var(--brand-navy))] mb-4">
