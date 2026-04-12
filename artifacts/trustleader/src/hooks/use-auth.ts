@@ -3,14 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { UserProfile } from "@workspace/api-client-react";
 import { getUserProfile } from "@workspace/api-client-react";
 import { supabase } from "@/lib/supabase";
-
-/** Base URL for email confirmation links (must match Supabase Auth redirect allowlist). */
-function authRedirectBase(): string {
-  const explicit = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
-  if (explicit) return explicit.replace(/\/$/, "");
-  if (typeof window !== "undefined") return window.location.origin;
-  return "";
-}
+import { getAuthRedirectOrigin } from "@/lib/auth-redirect-origin";
 
 export function useAuth() {
   const queryClient = useQueryClient();
@@ -69,14 +62,13 @@ export function useAuth() {
     password: string,
     intendedRole: "consumer" | "company" | "reseller" = "consumer",
   ) => {
-    const base = authRedirectBase();
+    const base = getAuthRedirectOrigin();
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { intended_role: intendedRole },
-        // Without this, Supabase uses the dashboard "Site URL" (often localhost:3000) and links break when the app runs on another port (e.g. Vite 5173).
-        emailRedirectTo: base ? `${base}/auth/login` : undefined,
+        emailRedirectTo: `${base}/auth/login`,
       },
     });
     if (error) throw error;

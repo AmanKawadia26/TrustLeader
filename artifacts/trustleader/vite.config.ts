@@ -13,8 +13,16 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? "/";
 
+/** Set on Vercel builds so Supabase email links use the deployed host (preview + production). */
+const vercelDeploymentUrl = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : "";
+
 export default defineConfig({
   base: basePath,
+  define: {
+    "import.meta.env.VITE_VERCEL_DEPLOYMENT_URL": JSON.stringify(vercelDeploymentUrl),
+  },
   plugins: [
     react(),
     tailwindcss(),

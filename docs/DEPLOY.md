@@ -69,8 +69,12 @@ Then continue:
    | `VITE_API_URL` | `https://trustleader-api.onrender.com` | Base URL for the Go API (no `/api` suffix; client prefixes paths). |
    | `VITE_SUPABASE_URL` | From Supabase project | Auth. |
    | `VITE_SUPABASE_ANON_KEY` | From Supabase project | Auth. |
+   | `VITE_AUTH_REDIRECT_URL` | `https://trust-leader-trustleader.vercel.app` | Optional. Forces Supabase email confirmation links to this origin. If unset, the Vite build injects `https://$VERCEL_URL` on Vercel; local dev uses the browser origin. |
+   | `VITE_SITE_URL` | Same as public site URL | Optional. Used as auth redirect origin if `VITE_AUTH_REDIRECT_URL` is unset. |
 
    Without `VITE_API_URL`, the app falls back to `window.location.origin`, so the browser would call your **Vercel** domain for `/api/...`, where no API exists.
+
+   **Supabase Auth URLs:** Set **Site URL** to your Vercel app (e.g. `https://trust-leader-trustleader.vercel.app`) and add the same origin under **Redirect URLs** (`…/**`). Otherwise confirmation emails may still use `http://localhost:3000`.
 
 3. Deploy. Then update **Render** `CORS_ORIGINS` to include your Vercel URL and redeploy the API if CORS was blocking.
 
